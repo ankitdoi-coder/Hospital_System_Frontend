@@ -1,5 +1,6 @@
 import React from 'react';
 import logoImg from "../assets/OnlyLogo.png"; // Make sure your logo path is correct
+import { Link } from 'react-router-dom';
 
 // SVG Icons for the Contact section
 const PhoneIcon = () => (
@@ -26,7 +27,7 @@ const Footer = () => {
     const currentYear = new Date().getFullYear();
 
     return (
-        <footer className="bg-white border-t border-gray-200 mt-20">
+        <footer className="bg-white border-t border-gray-200 mt-0">
             <div className="container mx-auto px-6 py-12">
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
                     
@@ -40,11 +41,11 @@ const Footer = () => {
                     <div>
                         <h2 className="font-bold text-lg mb-4 text-gray-800">Quick Links</h2>
                         <ul className="space-y-2 text-gray-600">
-                            <li><a href="#" className="hover:text-blue-600 transition-colors">Home</a></li>
-                            <li><a href="#" className="hover:text-blue-600 transition-colors">Appointment</a></li>
-                            <li><a href="#" className="hover:text-blue-600 transition-colors">Service</a></li>
-                            <li><a href="#" className="hover:text-blue-600 transition-colors">About Us</a></li>
-                            <li><a href="#" className="hover:text-blue-600 transition-colors">Contact Us</a></li>
+                            <li><Link to="/" className="hover:text-blue-600 transition-colors">Home</Link></li>
+                            <li><Link to="/appointment" className="hover:text-blue-600 transition-colors">Appointment</Link></li>
+                            <li><Link to="/services" className="hover:text-blue-600 transition-colors">Service</Link></li>
+                            <li><Link to="/about" className="hover:text-blue-600 transition-colors">About Us</Link></li>
+                            <li><Link to="/contactUs" className="hover:text-blue-600 transition-colors">Contact Us</Link></li>
                         </ul>
                     </div>
 
@@ -66,15 +67,15 @@ const Footer = () => {
                         <ul className="space-y-3 text-gray-600">
                             <li className="flex items-center gap-3">
                                 <PhoneIcon />
-                                <span>000-000-000</span>
+                                <span>1800-2024-3360</span>
                             </li>
                             <li className="flex items-center gap-3">
                                 <MailIcon />
-                                <span>info@email.com</span>
+                                <span>info@healthcare.com</span>
                             </li>
                             <li className="flex items-center gap-3">
                                 <LocationIcon />
-                                <span>Kalutara South</span>
+                                <span>Malviya Nagar, Jaipur</span>
                             </li>
                         </ul>
                     </div>
