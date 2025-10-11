@@ -3,10 +3,10 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { HeartHandshake, Lightbulb, ShieldCheck, Github, Linkedin } from 'lucide-react';
 
-import BackgroundImage from "../assets/BG4.jpg"; 
+import BackgroundImage from "../../assets/BG4.jpg"; 
 // Import your images - ensure paths are correct
-import missionImage from '../assets/m1.jpg'; // An image for the mission section
-import founderImage from '../assets/founder.jpg'; // A professional headshot of yourself
+import missionImage from "../../assets/m1.jpg"; // An image for the mission section
+import founderImage from '../../assets/founder.jpg'; // A professional headshot of yourself
 
 // --- Reusable Component for Value Cards ---
 const ValueCard = ({ icon, title, children }) => (

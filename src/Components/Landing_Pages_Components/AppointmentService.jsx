@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 // eslint-disable-next-line no-unused-vars
 import { motion } from 'framer-motion';
 import { UserPlus, LogIn, CalendarCheck, Stethoscope, History, FileDown, FileUp, BellRing, MessageSquare } from 'lucide-react';
-import BackgroundImage from '../assets/BG4.jpg'; // Make sure this path is correct
+import BackgroundImage from "../../assets/BG4.jpg"; // Make sure this path is correct
 
 const AppointmentsPage = () => {
     const features = [

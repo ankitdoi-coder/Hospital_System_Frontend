@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 // eslint-disable-next-line no-unused-vars
 import { motion } from 'framer-motion';
 import { Stethoscope, Users, ShieldCheck, CheckCircle } from 'lucide-react';
-import BackgroundImage from '../assets/BG4.jpg'; // Ensure this path is correct
+import BackgroundImage from "../../assets/BG4.jpg"; // Ensure this path is correct
 
 // A more visually polished Service Card component
 const ServiceCard = ({ icon, title, features }) => (

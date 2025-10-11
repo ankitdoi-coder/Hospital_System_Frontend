@@ -1,5 +1,5 @@
 import React from 'react';
-import logoImg from "../assets/OnlyLogo.png"; // Make sure your logo path is correct
+import logoImg from "../../assets/OnlyLogo.png"; // Make sure your logo path is correct
 import { Link } from 'react-router-dom';
 
 // SVG Icons for the Contact section

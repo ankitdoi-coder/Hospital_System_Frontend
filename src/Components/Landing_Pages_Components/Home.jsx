@@ -4,9 +4,9 @@ import { motion, useAnimation, animate } from "framer-motion";
 import { useInView } from "react-intersection-observer";
 import { UserPlus, Search, CalendarCheck, Star, HeartPulse, Award } from 'lucide-react';
 
-import BackgroundImage from "../assets/BG4.jpg"; 
-import cImg from "../assets/Cartoon1.png";
-import cImg2 from "../assets/Cartoon2.jpg";
+import BackgroundImage from "../../assets/BG4.jpg"; 
+import cImg from "../../assets/Cartoon1.png";
+import cImg2 from "../../assets/Cartoon2.jpg";
 
 // --- Reusable Animated Counter Component ---
 const AnimatedStat = ({ to, icon }) => {
@@ -133,7 +133,7 @@ const Home = () => {
                 </div>
             </section>
 
-            {/* --- WHO WE ARE SECTION (IMPROVED ANIMATION) --- */}
+            {/* --- WHO WE ARE SECTION --- */}
             <section className="py-24 px-6 md:px-16 bg-slate-50">
                 <motion.div 
                     className="container mx-auto"

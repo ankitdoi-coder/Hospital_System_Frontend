@@ -1,21 +1,29 @@
-
 import './App.css';
-import Register from './Components/Register';
-import Login from './Components/Login'
-import Home from './Components/Home';
-import Layout from './Components/Layout'; // Import your new Layout component
-import ContactUs from './Components/ContactUs';
+import Register from './Components/Landing_Pages_Components/Register';
+import Login from './Components/Landing_Pages_Components/Login'
+import Home from './Components/Landing_Pages_Components/Home';
+import Layout from './Components/Landing_Pages_Components/Layout';
+import ContactUs from './Components/Landing_Pages_Components/ContactUs';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-import Error404 from './Components/Error404';
-import AboutUs from './Components/AboutUs';
-import ServicesPage from './Components/ServicesPage';
-import AppointmentService from './Components/AppointmentService';
+import Error404 from './Components/Landing_Pages_Components/Error404';
+import AboutUs from './Components/Landing_Pages_Components/AboutUs';
+import ServicesPage from './Components/Landing_Pages_Components/ServicesPage';
+import AppointmentService from './Components/Landing_Pages_Components/AppointmentService';
+import Demoform from './Components/Landing_Pages_Components/Demoform';
+import { setupAxiosInterceptors } from './Services/AuthService';
+
+// Import Dashboard components (create these)
+import PatientDashboard from './Components/DashBoards/PatientDashboard';
+import DoctorDashboard from './Components/DashBoards/DoctorDashboard';
+import AdminDashboard from './Components/DashBoards/AdminDashboard';
+
+// Import ProtectedRoute component
+import ProtectedRoute from './Components/DashBoards/ProtectedRoute';
+
+// Setup axios interceptors once when app loads
+setupAxiosInterceptors();
 
 function App() {
-  // In App.jsx
-
-  // ... import your Login component, e.g., import Login from './Components/Login';
-
   const router = createBrowserRouter([
     {
       path: "/",
@@ -46,14 +54,44 @@ function App() {
           element: <AboutUs />
         },
         {
-          path:"/services",
-          element:<ServicesPage/>
+          path: "/services",
+          element: <ServicesPage />
         },
         {
-          path:"/appointment",
-          element:<AppointmentService/>
+          path: "/appointment",
+          element: <AppointmentService />
         }
       ]
+    },
+    // Protected Dashboard Routes (outside Layout)
+    {
+      path: "/patient/dashboard",
+      element: (
+        <ProtectedRoute allowedRoles={['ROLE_PATIENT']}>
+          <PatientDashboard />
+        </ProtectedRoute>
+      )
+    },
+    {
+      path: "/doctor/dashboard",
+      element: (
+        <ProtectedRoute allowedRoles={['ROLE_DOCTOR']}>
+          <DoctorDashboard />
+        </ProtectedRoute>
+      )
+    },
+    {
+      path: "/admin/dashboard",
+      element: (
+        <ProtectedRoute allowedRoles={['ROLE_ADMIN']}>
+          <AdminDashboard />
+        </ProtectedRoute>
+      )
+    },
+    // Error routes
+    {
+      path: "/demoform",
+      element: <Demoform />
     },
     {
       path: "*",
@@ -62,12 +100,9 @@ function App() {
   ]);
 
   return (
-    <>
-      <div className="overflow-x-hidden bg-white-100 bg-cover bg-center bg-no-repeat w-screen h-screen">
-        {/* The RouterProvider should be the only thing you render here */}
-        <RouterProvider router={router} />
-      </div>
-    </>
+    <div className="overflow-x-hidden bg-white-100 bg-cover bg-center bg-no-repeat w-screen h-screen">
+      <RouterProvider router={router} />
+    </div>
   );
 }
 
