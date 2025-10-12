@@ -1,6 +1,6 @@
 import axios from "axios";
 
-// REST API Base URL
+// REST API Base URL for Authentication
 const REST_API_BASE_URL = 'http://localhost:8080/api/auth';
 
 // ==================== API CALLS ====================
@@ -97,6 +97,7 @@ export const hasRole = (role) => {
 };
 
 // ==================== AXIOS INTERCEPTORS ====================
+
 
 // Setup axios to automatically include JWT token in all requests
 export const setupAxiosInterceptors = () => {

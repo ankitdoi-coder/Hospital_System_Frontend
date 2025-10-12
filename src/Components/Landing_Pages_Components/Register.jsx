@@ -1,12 +1,12 @@
 import React from 'react';
 import { useForm } from 'react-hook-form';
-import { Link,Navigate,useNavigate} from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import toast, { Toaster } from 'react-hot-toast';
 
 import Logo from "../../assets/OnlyLogo.png";
 import BackgroundImage from "../../assets/BG4.jpg";
 
-import { RegisterUser} from "../../Services/AuthService.js";
+import { RegisterUser } from "../../Services/AuthService.js";
 
 
 const Register = () => {
@@ -38,7 +38,7 @@ const Register = () => {
             }, d * 1000);
         });
     };
-
+    const Navigator = useNavigate();
     const onSubmit = async (data) => {
         await delay(2); // Simulating network delay
 
@@ -55,31 +55,31 @@ const Register = () => {
             // role: data.role   //  Keep original role name if needed
         };
 
-        const Navigator=useNavigate;
 
-        try{
+
+        try {
             // eslint-disable-next-line no-unused-vars
-            const response=await RegisterUser(registerData);
+            const response = await RegisterUser(registerData);
 
             // Show success Toast
-            toast.success('Registration Successful ! Redirecting to login...',{
-                duration:3000,
-                position:'top-center',
+            toast.success('Registration Successful ! Redirecting to login...', {
+                duration: 3000,
+                position: 'top-center',
             });
 
             // Wait 2 second then Navigate to login 
-            setTimeout(()=>{
-               Navigator('/login');
-            },2000);
+            setTimeout(() => {
+                Navigator('/login');
+            }, 1000);
 
-        } catch(error){
+        } catch (error) {
             // Show Error Toast 
-            toast.error(error.response?.data?.message || 'Registration Failed. Please try again.',{
-                duration:4000,
-                postion:'top-center'
+            toast.error(error.response?.data?.message || 'Registration Failed. Please try again.', {
+                duration: 4000,
+                postion: 'top-center'
             });
-            console.error('Registration error:',error);
-        }        
+            console.error('Registration error:', error);
+        }
     };
 
     return (

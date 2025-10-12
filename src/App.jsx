@@ -21,6 +21,7 @@ import AdminDashboard from './Components/DashBoards/AdminDashboard';
 import ProtectedRoute from './Components/DashBoards/ProtectedRoute';
 
 // Setup axios interceptors once when app loads
+//it gives every request a JWT token
 setupAxiosInterceptors();
 
 function App() {

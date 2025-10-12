@@ -4,10 +4,10 @@ import BackgroundImage from "../../assets/BG4.jpg";
 import { Link, useNavigate } from 'react-router-dom';
 import toast, { Toaster } from 'react-hot-toast';
 import { useForm } from 'react-hook-form';
-import { LoginUser, saveToken, getDashboardRoute } from "../../Services/AuthService.js";
+import { LoginUser, saveToken, getDashboardRoute, getToken, getUserRole } from "../../Services/AuthService.js";
 
 const Login = () => {
-  const navigate = useNavigate(); // Move useNavigate to component level
+  const navigate = useNavigate(); 
 
   const {
     register,
@@ -31,10 +31,25 @@ const Login = () => {
 
       // Extract JWT token from response
       const token = response.data.jwt;
+      console.log('Extracted token:', token);
 
       if (token) {
         // Save token to localStorage
         saveToken(token);
+        console.log('Token saved to localStorage');
+
+        // Verify token was saved
+        const savedToken = getToken();
+        console.log('Retrieved token from localStorage:', savedToken);
+
+        // Get user role
+        const userRole = getUserRole();
+        console.log('User role extracted:', userRole);
+
+        // Get dashboard route
+        const dashboardRoute = getDashboardRoute();
+        console.log('Dashboard route determined:', dashboardRoute);
+
 
         // Show success toast
         toast.success('Login Successful! Redirecting to Dashboard...', {
@@ -42,12 +57,13 @@ const Login = () => {
           position: 'top-center',
         });
 
-        // Get the appropriate dashboard route based on user role
-        const dashboardRoute = getDashboardRoute();
 
         // Navigate after 1.5 seconds
+         console.log('Setting timeout to navigate...');
         setTimeout(() => {
-          navigate(dashboardRoute);
+           console.log('Timeout executed, navigating to:', dashboardRoute);
+          navigate(dashboardRoute, { replace: true });
+          console.log('Navigate called');
         }, 1500);
       } else {
         toast.error('Login failed. No token received.', {
