@@ -24,7 +24,8 @@ const Register = () => {
             contactNumber: '',
             specialty: '',
             email: '',
-            password: ''
+            password: '',
+            experience: ''
         }
     });
 
@@ -223,27 +224,54 @@ const Register = () => {
 
                     {/* --- DOCTOR-SPECIFIC FIELD --- */}
                     {selectedRole === 'doctor' && (
-                        <div className="relative mb-6">
-                            <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                                <svg className="w-5 h-5 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
-                                    <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM4 11a1 1 0 011-1h6a1 1 0 110 2H5a1 1 0 01-1-1zM4 15a1 1 0 011-1h2a1 1 0 110 2H5a1 1 0 01-1-1z"></path>
-                                </svg>
-                            </div>
-                            <input
-                                type="text"
-                                {...register("specialty", {
-                                    required: { value: true, message: "⚠️Specialty is required" },
-                                    minLength: { value: 3, message: "⚠️Specialty must be at least 3 characters long" }
-                                })}
-                                className="bg-white/50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-3 placeholder-gray-500"
-                                placeholder="Specialty (e.g., Cardiology)"
-                            />
-                            {errors.specialty && (
-                                <div className="text-red-500 text-sm mt-1">
-                                    {errors.specialty.message}
+                        <div>
+                            {/* for specialty */}
+                            <div className="relative mb-6">
+                                <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                    <svg className="w-5 h-5 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM4 11a1 1 0 011-1h6a1 1 0 110 2H5a1 1 0 01-1-1zM4 15a1 1 0 011-1h2a1 1 0 110 2H5a1 1 0 01-1-1z"></path>
+                                    </svg>
                                 </div>
-                            )}
+                                <input
+                                    type="text"
+                                    {...register("specialty", {
+                                        required: { value: true, message: "⚠️Specialty is required" },
+                                        minLength: { value: 3, message: "⚠️Specialty must be at least 3 characters long" }
+                                    })}
+                                    className="bg-white/50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-3 placeholder-gray-500"
+                                    placeholder="Specialty (e.g., Cardiology)"
+                                />
+                                {errors.specialty && (
+                                    <div className="text-red-500 text-sm mt-1">
+                                        {errors.specialty.message}
+                                    </div>
+                                )}
+                            </div>
+
+                       {/* for Experience */}
+                            <div className="relative mb-6">
+                                <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                    <svg className="w-5 h-5 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM4 11a1 1 0 011-1h6a1 1 0 110 2H5a1 1 0 01-1-1zM4 15a1 1 0 011-1h2a1 1 0 110 2H5a1 1 0 01-1-1z"></path>
+                                    </svg>
+                                </div>
+                                <input
+                                    type="number"
+                                    {...register("experience", {
+                                        required: { value: true, message: "⚠️Experience is required" },
+                                        min: { value: 0, message: "⚠️Experience must be a positive number" }
+                                    })}
+                                    className="bg-white/50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-3 placeholder-gray-500"
+                                    placeholder="Years of Experience"
+                                />
+                                {errors.experience && (
+                                    <div className="text-red-500 text-sm mt-1">
+                                        {errors.experience.message}
+                                    </div>
+                                )}
+                            </div>
                         </div>
+
                     )}
 
                     {/* --- COMMON AUTHENTICATION FIELDS --- */}
