@@ -1,33 +1,22 @@
-import axios from "axios";
-
-// REST API Base URL for Authentication
-const REST_API_BASE_URL = 'http://localhost:8080/api/auth';
-
-// Create a centralized axios instance
-export const axiosInstance = axios.create({
-    baseURL: 'http://localhost:8080',
-    headers: {
-        'Content-Type': 'application/json'
-    }
-});
+import apiClient from '../API/apiClient';
 
 // ==================== API CALLS ====================
 
 // For Registering the user
 export const RegisterUser = (registerData) => 
-    axiosInstance.post(`${REST_API_BASE_URL}/register`, registerData);
+    apiClient.post('/api/auth/register', registerData);
 
 // For Logging in the user
 export const LoginUser = (loginData) => 
-    axiosInstance.post(`${REST_API_BASE_URL}/login`, loginData);
+    apiClient.post('/api/auth/login', loginData);
 
 // For Forgot Password
 export const forgotPassword = (email) => 
-    axiosInstance.post(`${REST_API_BASE_URL}/forgot-password`, { email });
+    apiClient.post('/api/auth/forgot-password', { email });
 
 // For Reset Password
 export const resetPassword = (token, newPassword) => 
-    axiosInstance.post(`${REST_API_BASE_URL}/reset-password`, { token, newPassword });
+    apiClient.post('/api/auth/reset-password', { token, newPassword });
 
 // ==================== TOKEN MANAGEMENT ====================
 
@@ -136,7 +125,7 @@ export const setupAxiosInterceptors = () => {
     console.log('⚙️ Setting up axios interceptors...');
     
     // Request interceptor - Add token to headers
-    axiosInstance.interceptors.request.use(
+    apiClient.interceptors.request.use(
         (config) => {
             const token = getToken();
             if (token) {
@@ -154,7 +143,7 @@ export const setupAxiosInterceptors = () => {
     );
 
     // Response interceptor - Handle 401/403 errors
-    axiosInstance.interceptors.response.use(
+    apiClient.interceptors.response.use(
         (response) => {
             // Check if backend sent a new token in response headers
             const newToken = response.headers['x-new-token'] || response.headers['authorization'];
@@ -229,8 +218,8 @@ export const setupAxiosInterceptors = () => {
 export const resetInterceptors = () => {
     interceptorsSetup = false;
     isRedirecting = false;
-    axiosInstance.interceptors.request.clear();
-    axiosInstance.interceptors.response.clear();
+    apiClient.interceptors.request.clear();
+    apiClient.interceptors.response.clear();
     console.log('🔄 Interceptors reset');
 };
 

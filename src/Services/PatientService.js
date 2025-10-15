@@ -1,24 +1,22 @@
-import { axiosInstance } from './AuthService';
-
-const REST_API_BASE_URL = '/api/patient';
+import apiClient from '../API/apiClient';
 
 // Get all approved doctors
-export const getDoctors = () => axiosInstance.get(`${REST_API_BASE_URL}/doctors`);
+export const getDoctors = () => apiClient.get('/api/patient/doctors');
 
 // Book new appointment
-export const bookAppointment = (appointmentData) => axiosInstance.post(`${REST_API_BASE_URL}/appointments/new`, appointmentData);
+export const bookAppointment = (appointmentData) => apiClient.post('/api/patient/appointments/new', appointmentData);
 
 // Get my appointments
-export const getMyAppointments = () => axiosInstance.get(`${REST_API_BASE_URL}/appointments/my`);
+export const getMyAppointments = () => apiClient.get('/api/patient/appointments/my');
 
 // Get my prescriptions
-export const getMyPrescriptions = () => axiosInstance.get(`${REST_API_BASE_URL}/prescriptions`);
+export const getMyPrescriptions = () => apiClient.get('/api/patient/prescriptions');
 
 // Get my profile
-export const getMyProfile = () => axiosInstance.get(`${REST_API_BASE_URL}/profile`);
+export const getMyProfile = () => apiClient.get('/api/patient/profile');
 
 // Make payment
-export const makePayment = (appointmentId) => axiosInstance.put(`${REST_API_BASE_URL}/appointments/${appointmentId}/pay`);
+export const makePayment = (appointmentId) => apiClient.put(`/api/patient/appointments/${appointmentId}/pay`);
 
 // Cancel appointment
-export const cancelAppointment = (appointmentId) => axiosInstance.delete(`${REST_API_BASE_URL}/appointments/${appointmentId}/cancel`);
+export const cancelAppointment = (appointmentId) => apiClient.delete(`/api/patient/appointments/${appointmentId}/cancel`);

@@ -1,25 +1,23 @@
-import { axiosInstance } from './AuthService';
-
-const REST_API_BASE_URL = '/api/admin';
+import apiClient from '../API/apiClient';
 
 // Get all doctors
-export const getDoctors = () => axiosInstance.get(`${REST_API_BASE_URL}/doctors`);
+export const getDoctors = () => apiClient.get('/api/admin/doctors');
 
 // Approve doctor
-export const approveDoctor = (id) => axiosInstance.put(`${REST_API_BASE_URL}/doctors/${id}/approve`);
+export const approveDoctor = (id) => apiClient.put(`/api/admin/doctors/${id}/approve`);
 
 // Reject doctor
-export const rejectDoctor = (id) => axiosInstance.put(`${REST_API_BASE_URL}/doctors/${id}/reject`);
+export const rejectDoctor = (id) => apiClient.put(`/api/admin/doctors/${id}/reject`);
 
 // Get all patients
-export const getPatients = () => axiosInstance.get(`${REST_API_BASE_URL}/patients`);
+export const getPatients = () => apiClient.get('/api/admin/patients');
 
 // Get all billing records
-export const getBilling = () => axiosInstance.get(`${REST_API_BASE_URL}/billing`);
+export const getBilling = () => apiClient.get('/api/admin/billing');
 
 // Update billing status
-export const updateBillingStatus = (id, status) => axiosInstance.put(`${REST_API_BASE_URL}/billing/${id}/status`, status);
+export const updateBillingStatus = (id, status) => apiClient.put(`/api/admin/billing/${id}/status`, status);
 
 // Get revenue stats
-export const getDailyRevenue = () => axiosInstance.get(`${REST_API_BASE_URL}/revenue/daily`);
-export const getMonthlyRevenue = () => axiosInstance.get(`${REST_API_BASE_URL}/revenue/monthly`);
+export const getDailyRevenue = () => apiClient.get('/api/admin/revenue/daily');
+export const getMonthlyRevenue = () => apiClient.get('/api/admin/revenue/monthly');
