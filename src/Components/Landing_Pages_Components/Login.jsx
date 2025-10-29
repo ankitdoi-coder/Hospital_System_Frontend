@@ -1,13 +1,16 @@
 import React from 'react';
+import { useAppDispatch } from '../../store/hooks';
+import { setAuth } from '../../store/slices/authSlice';
 import Logo from "../../assets/OnlyLogo.png";
 import BackgroundImage from "../../assets/BG4.jpg";
 import { Link, useNavigate } from 'react-router-dom';
 import toast, { Toaster } from 'react-hot-toast';
 import { useForm } from 'react-hook-form';
-import { LoginUser, saveToken, getDashboardRoute, getToken, getUserRole } from "../../Services/AuthService.js";
+import { LoginUser, saveToken, getDashboardRoute, getToken, getUserRole, getUserEmail } from "../../Services/AuthService.js";
 
 const Login = () => {
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
+  const dispatch = useAppDispatch();
 
   const {
     register,
@@ -42,14 +45,22 @@ const Login = () => {
         const savedToken = getToken();
         console.log('Retrieved token from localStorage:', savedToken);
 
-        // Get user role
+        // Get user role and email
         const userRole = getUserRole();
+        const userEmail = getUserEmail();
         console.log('User role extracted:', userRole);
+        console.log('User email extracted:', userEmail);
+
+        // Update Redux state
+        dispatch(setAuth({
+          user: userEmail,
+          token: token,
+          role: userRole
+        }));
 
         // Get dashboard route
         const dashboardRoute = getDashboardRoute();
         console.log('Dashboard route determined:', dashboardRoute);
-
 
         // Show success toast
         toast.success('Login Successful! Redirecting to Dashboard...', {
@@ -59,9 +70,9 @@ const Login = () => {
 
 
         // Navigate after 1.5 seconds
-         console.log('Setting timeout to navigate...');
+        console.log('Setting timeout to navigate...');
         setTimeout(() => {
-           console.log('Timeout executed, navigating to:', dashboardRoute);
+          console.log('Timeout executed, navigating to:', dashboardRoute);
           navigate(dashboardRoute, { replace: true });
           console.log('Navigate called');
         }, 1500);
@@ -190,9 +201,9 @@ const Login = () => {
                 Remember me
               </label>
             </div>
-            <a href="#" className="text-sm font-medium text-blue-600 hover:underline">
+            <Link to="/forgot-password" className="text-sm font-medium text-blue-600 hover:underline">
               Forgot Password?
-            </a>
+            </Link>
           </div>
 
           {/* Submit Button */}

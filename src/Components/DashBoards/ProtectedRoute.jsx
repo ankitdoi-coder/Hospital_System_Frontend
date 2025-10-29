@@ -1,13 +1,25 @@
-import { Navigate } from 'react-router-dom';
-import { getToken, getUserRole } from "../../Services/AuthService.js";
+import { Navigate, useLocation } from 'react-router-dom';
+import { isAuthenticated, getUserRole, removeToken } from "../../Services/AuthService.js";
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
-    const token = getToken();
+    const location = useLocation();
+    const authenticated = isAuthenticated();
     const userRole = getUserRole();
 
-    // If no token, redirect to login
-    if (!token) {
-        return <Navigate to="/login" replace />;
+    // If not authenticated (no token or expired token), redirect to login
+    if (!authenticated) {
+        console.log('⚠️ User not authenticated, redirecting to login...');
+        console.log('Current path:', location.pathname);
+        
+        // Clear any stale tokens
+        removeToken();
+        
+        // Preserve the attempted location so we can redirect back after login
+        return <Navigate 
+            to="/login" 
+            state={{ from: location.pathname }} 
+            replace 
+        />;
     }
 
     // If roles are specified and user doesn't have the required role
@@ -17,10 +29,15 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
         );
 
         if (!hasRole) {
+            console.log('⚠️ User does not have required role');
+            console.log('User role:', userRole);
+            console.log('Required roles:', allowedRoles);
+            
             return <Navigate to="/unauthorized" replace />;
         }
     }
 
+    console.log('✅ Access granted to protected route:', location.pathname);
     return children;
 };
 

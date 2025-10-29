@@ -1,23 +1,11 @@
 🏥 Healthcare Service Frontend
 =============================
 
-This repository contains the frontend application for the Smart Healthcare Appointment & Records System. It is a modern, responsive, and user-friendly web interface built with React. This application provides the user interface for patients, doctors, and administrators to interact with the backend services.
+This repository contains the frontend application for the **Smart Healthcare Appointment & Records System**. It is a modern, responsive, and user-friendly web interface built with **React**, providing a seamless user experience for patients, doctors, and administrators to interact with the backend services.
 
+## ✨ Features
 
-🚀 Project Status (As of 12th October 2025)
------------------
-* The frontend development kicked off on 8th October 2025. The primary goal is to build a seamless user experience that consumes the completed backend API.
-* **Project Setup:** ✅ Completed (React boilerplate, build tools, and folder structure).
-* **Core UI Components:** ⏳ In Progress (Buttons, forms, modals, and layout components).
-* **Routing & Navigation:** ⏳ In Progress (Setting up routes for different user roles).
-* **State Management:** 📋 To Do (Implementing a global state solution like Redux or Zustand).
-* **API Integration Layer:** 📋 To Do (Creating services to communicate with the backend).
-* **User Authentication Views:** 📋 To Do (Login and Registration pages).
-
-
-## ✨ Features (Planned)
-
-This application will provide a dedicated interface for each user role, leveraging the backend API endpoints.
+This application provides a dedicated, role-based interface for each user, leveraging the backend API endpoints.
 
 ### Patient Portal
 
@@ -45,7 +33,7 @@ This frontend follows a modern component-based architecture using React to creat
 - **Components Layer:** The UI is built from small, reusable components (e.g., Button, AppointmentCard, DoctorProfile). These are organized into larger "View" components that represent full pages.
 - **Routing Layer:** React Router is used to handle client-side navigation, directing users to the correct views based on the URL and protecting routes based on user roles (e.g., a patient cannot access the admin dashboard).
 - **State Management Layer:** A centralized store (like Redux Toolkit) will manage the application's state, such as user authentication status, lists of doctors, and appointment data. This ensures data is consistent across the application.
-- **API Service Layer:** Axios is used to create a dedicated layer for communicating with the backend REST API. It handles sending authenticated requests, fetching data, and processing responses.
+- **API Service Layer:** Axios is used to create a dedicated layer for communicating with the backend REST API. It handles sending authenticated requests, fetching data, and processing responses, with interceptors for centralized token management.
 
 ## 💻 Technology Stack
 
@@ -55,7 +43,7 @@ This frontend follows a modern component-based architecture using React to creat
 | Build Tool | Vite | Modern, fast frontend build tool for development and production. |
 | Routing | React Router DOM | For client-side routing and navigation between pages. |
 | HTTP Client | Axios | Making promise-based HTTP requests to the backend API. |
-| State Management | Redux Toolkit | Centralized state management for the entire application. |
+| State Management | Redux Toolkit & React Redux | Centralized and predictable state management for the entire application. |
 | Styling | Material-UI / Tailwind CSS | Component library and/or utility-first CSS for a clean, modern design. |
 | API Documentation | Swagger UI | Viewing and interacting with the backend API documentation. |
 | Package Manager | npm / Yarn | Managing project dependencies. |
@@ -87,39 +75,59 @@ The database schema is designed to be normalized and efficient, capturing the es
 
 ## 🚀 Getting Started
 
-Follow these instructions to get a local instance of the frontend application up and running.
+Follow these instructions to get a local instance of the application up and running for development.
 
 ### Prerequisites
 
-- Node.js v18 or later
-- npm or Yarn package manager
-- A running instance of the Healthcare Service Backend
+- **Node.js**: v18.x or later
+- **npm** or **Yarn**: Package manager
+- **Java**: JDK 17 or later
+- **Maven**: For building the backend
+- **MySQL**: Database for the backend
 
-### Installation & Setup
+### 1. Backend Setup
 
+First, ensure the backend server is running.
 
-1.  Bash ```git clone https://github.com/ankitdoi-coder/healthcare-backend.gitcd healthcare-frontend```
-2.  install dependencies
-    
-3.  **Configure the database:**
-    
-    *   Create a new database in MYSQL (e.g., healthcaredb).
-        
-    *   Update the src/main/resources/application.properties file with your database credentials.
-        
-4.  Bash ```mvn spring-boot:runThe server will start on http://localhost:8080.```
-    
+1.  **Clone the backend repository:**
+    ```bash
+    git clone https://github.com/ankitdoi-coder/HealthCare-Backend.git
+    cd HealthCare-Backend
+    ```
 
-⚙️ Configuration & Environment Variables
-----------------------------------------
+2.  **Configure the database:**
+    - Create a new database in MySQL (e.g., `healthcaredb`).
+    - Update `src/main/resources/application.properties` with your database URL, username, and password.
 
-For security and flexibility, sensitive data and environment-specific settings should be managed via environment variables. Create a .env file or configure your deployment environment with the following keys:
+3.  **Run the backend server:**
+    ```bash
+    mvn spring-boot:run
+    ```
+    The backend will start on `http://localhost:8080`.
 
+### 2. Frontend Setup
 
-| Variable              | Description                                   | Example Value                                               |
-|-----------------------|-----------------------------------------------|-------------------------------------------------------------|
-| **DB_URL**            | The JDBC URL for your database connection.    | `jdbc:postgresql://localhost:5432/healthcaredb`             |
-| **DB_USERNAME**       | The username for your database.               | `My SQL`                                                    |
-| **DB_PASSWORD**       | The password for your database.               | `your_password`                                             |
-| **JWT_SECRET**        | A long, random string used to sign JWTs.      | `a-very-long-and-secure-random-secret-key-123`              |
-| **JWT_EXPIRATION_MS** | The expiration time for JWTs in milliseconds. | `86400000` (24 hours)                                       |
+1.  **Clone this frontend repository:**
+    ```bash
+    git clone https://github.com/your-username/healthcare-frontend.git
+    cd healthcare-frontend
+    ```
+
+2.  **Install dependencies:**
+    ```bash
+    npm install
+    ```
+
+3.  **Run the development server:**
+    ```bash
+    npm run dev
+    ```
+    The frontend application will be available at `http://localhost:5173`.
+
+### ⚙️ Environment Variables
+
+The frontend application expects the backend API to be running at `http://localhost:8080`. If your backend is on a different URL, create a `.env.local` file in the root of the frontend project and add the following variable:
+
+```
+VITE_API_BASE_URL=http://your-backend-api-url
+```

@@ -8,7 +8,7 @@ import BackgroundImage from "../../assets/BG4.jpg";
 import cImg from "../../assets/Cartoon1.png";
 import cImg2 from "../../assets/Cartoon2.jpg";
 
-// --- Reusable Animated Counter Component ---
+// Number Counter Component
 const AnimatedStat = ({ to, icon }) => {
     const controls = useAnimation();
     const { ref, inView } = useInView({ threshold: 0.5, triggerOnce: true });

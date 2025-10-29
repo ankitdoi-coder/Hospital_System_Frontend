@@ -95,7 +95,7 @@ const Navbar = () => {
                             <div className='flex flex-col items-center gap-6 mt-12 w-full'>
                                 <Link to="/login" onClick={() => setIsMobileMenuOpen(false)} className="w-full text-center py-3 text-lg font-medium text-gray-700 rounded-full hover:bg-gray-100 transition-colors duration-300 border">
                                     Log In
-                                 </Link>
+                                </Link>
                                 <Link to="/register" onClick={() => setIsMobileMenuOpen(false)} className="w-full text-center py-3 text-lg font-medium text-white bg-indigo-600 rounded-full hover:bg-indigo-700 transition-all duration-300 shadow-sm">
                                     Register
                                 </Link>
