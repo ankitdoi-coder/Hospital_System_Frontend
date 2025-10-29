@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate, Routes, Route, Link, useLocation } from "react-router-dom";
 import { Search, Bell, Settings, LogOut, Menu, X } from "lucide-react";
@@ -5,6 +6,11 @@ import { useAppSelector, useAppDispatch } from '../../store/hooks';
 import { setAppointments, setLoading } from '../../store/slices/appointmentsSlice';
 import { setPrescriptions } from '../../store/slices/prescriptionsSlice';
 import { setCurrentPatient } from '../../store/slices/patientsSlice';
+=======
+import React, { useState, useEffect } from "react";
+import { useNavigate, Routes, Route, Link, useLocation } from "react-router-dom";
+import { Search, Bell, Settings, LogOut, Menu, X } from "lucide-react";
+>>>>>>> e7ee58140669b1cf6ba47542fd6dfd5a84117303
 import { removeToken, getUserEmail } from "../../Services/AuthService.js";
 import { getMyAppointments, getMyPrescriptions, getMyProfile } from "../../Services/PatientService.js";
 import logo from "../../assets/OnlyLogo.svg";
@@ -21,9 +27,13 @@ const navItems = [
     { name: "Settings", path: "/patient/settings", icon: "settings" },
 ];
 
+<<<<<<< HEAD
 const DashboardHome = () => {
     const { list: appointments } = useAppSelector(state => state.appointments);
     const { currentPatient: patientProfile } = useAppSelector(state => state.patients);
+=======
+const DashboardHome = ({ appointments, patientProfile }) => {
+>>>>>>> e7ee58140669b1cf6ba47542fd6dfd5a84117303
     const userEmail = getUserEmail();
     const upcomingAppointments = appointments?.filter(a => new Date(a.appointmentDate) > new Date()).sort((a, b) => new Date(a.appointmentDate) - new Date(b.appointmentDate));
     const nextAppointment = upcomingAppointments?.[0];
@@ -172,7 +182,11 @@ const DashboardHome = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <Link to="/patient/doctors" className="bg-white rounded-2xl p-6 shadow-xl border border-slate-200 hover:shadow-2xl transition-all duration-200 transform hover:scale-[1.02] group">
                     <div className="flex items-center space-x-4">
+<<<<<<< HEAD
                         <div className="p-3 bg-linear-to-br from-blue-500 to-blue-600 rounded-xl group-hover:from-blue-600 group-hover:to-blue-700 transition-all">
+=======
+                        <div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl group-hover:from-blue-600 group-hover:to-blue-700 transition-all">
+>>>>>>> e7ee58140669b1cf6ba47542fd6dfd5a84117303
                             <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
                                 <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
                             </svg>
@@ -186,7 +200,11 @@ const DashboardHome = () => {
 
                 <Link to="/patient/new-appointment" className="bg-white rounded-2xl p-6 shadow-xl border border-slate-200 hover:shadow-2xl transition-all duration-200 transform hover:scale-[1.02] group">
                     <div className="flex items-center space-x-4">
+<<<<<<< HEAD
                         <div className="p-3 bg-linear-to-br from-emerald-500 to-emerald-600 rounded-xl group-hover:from-emerald-600 group-hover:to-emerald-700 transition-all">
+=======
+                        <div className="p-3 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl group-hover:from-emerald-600 group-hover:to-emerald-700 transition-all">
+>>>>>>> e7ee58140669b1cf6ba47542fd6dfd5a84117303
                             <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                             </svg>
@@ -200,7 +218,11 @@ const DashboardHome = () => {
 
                 <Link to="/patient/medicine" className="bg-white rounded-2xl p-6 shadow-xl border border-slate-200 hover:shadow-2xl transition-all duration-200 transform hover:scale-[1.02] group">
                     <div className="flex items-center space-x-4">
+<<<<<<< HEAD
                         <div className="p-3 bg-linear-to-br from-purple-500 to-purple-600 rounded-xl group-hover:from-purple-600 group-hover:to-purple-700 transition-all">
+=======
+                        <div className="p-3 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl group-hover:from-purple-600 group-hover:to-purple-700 transition-all">
+>>>>>>> e7ee58140669b1cf6ba47542fd6dfd5a84117303
                             <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
@@ -214,7 +236,11 @@ const DashboardHome = () => {
 
                 <Link to="/patient/settings" className="bg-white rounded-2xl p-6 shadow-xl border border-slate-200 hover:shadow-2xl transition-all duration-200 transform hover:scale-[1.02] group">
                     <div className="flex items-center space-x-4">
+<<<<<<< HEAD
                         <div className="p-3 bg-linear-to-br from-orange-500 to-orange-600 rounded-xl group-hover:from-orange-600 group-hover:to-orange-700 transition-all">
+=======
+                        <div className="p-3 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl group-hover:from-orange-600 group-hover:to-orange-700 transition-all">
+>>>>>>> e7ee58140669b1cf6ba47542fd6dfd5a84117303
                             <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                             </svg>
@@ -235,6 +261,7 @@ const DashboardHome = () => {
 const PatientDashboard = () => {
     const navigate = useNavigate();
     const location = useLocation();
+<<<<<<< HEAD
     const dispatch = useAppDispatch();
     const userEmail = getUserEmail();
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -371,6 +398,143 @@ const PatientDashboard = () => {
         navigate("/login");
     }, [navigate]);
 
+=======
+    const userEmail = getUserEmail();
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+    const [appointments, setAppointments] = useState([]);
+    const [prescriptions, setPrescriptions] = useState([]);
+    const [patientProfile, setPatientProfile] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    const handlePrintPrescription = (prescription) => {
+        const printWindow = window.open('', '_blank');
+        const printContent = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Prescription - ${prescription.id}</title>
+                <style>
+                    body { font-family: Arial, sans-serif; margin: 40px; line-height: 1.6; }
+                    .header { text-align: center; border-bottom: 2px solid #333; padding-bottom: 20px; margin-bottom: 30px; }
+                    .prescription-info { margin-bottom: 30px; }
+                    .section { margin-bottom: 20px; }
+                    .label { font-weight: bold; color: #333; }
+                    .value { margin-left: 10px; }
+                    .medication-box { border: 1px solid #ddd; padding: 15px; border-radius: 8px; background-color: #f9f9f9; }
+                    .footer { margin-top: 40px; text-align: center; font-size: 12px; color: #666; }
+                    @media print { body { margin: 20px; } }
+                </style>
+            </head>
+            <body>
+                <div class="header">
+                    <h1>HealthCare System</h1>
+                    <h2>Medical Prescription</h2>
+                </div>
+                
+                <div class="prescription-info">
+                    <div class="section">
+                        <span class="label">Prescription ID:</span>
+                        <span class="value">#${prescription.id}</span>
+                    </div>
+                    <div class="section">
+                        <span class="label">Appointment ID:</span>
+                        <span class="value">#${prescription.appointmentId}</span>
+                    </div>
+                    <div class="section">
+                        <span class="label">Patient:</span>
+                        <span class="value">${patientProfile ? `${patientProfile.firstName} ${patientProfile.lastName}` : userEmail}</span>
+                    </div>
+                    <div class="section">
+                        <span class="label">Patient ID:</span>
+                        <span class="value">P${patientProfile?.id || '----'}</span>
+                    </div>
+                    <div class="section">
+                        <span class="label">Date:</span>
+                        <span class="value">${new Date().toLocaleDateString()}</span>
+                    </div>
+                </div>
+                
+                <div class="medication-box">
+                    <h3>Prescribed Medication</h3>
+                    <div class="section">
+                        <span class="label">Medication Details:</span>
+                        <div class="value">${prescription.medicationDetails}</div>
+                    </div>
+                    <div class="section">
+                        <span class="label">Dosage Instructions:</span>
+                        <div class="value">${prescription.dosages}</div>
+                    </div>
+                </div>
+                
+                <div class="footer">
+                    <p>This prescription was generated electronically by HealthCare System</p>
+                    <p>For any queries, please contact our support team</p>
+                </div>
+            </body>
+            </html>
+        `;
+        
+        printWindow.document.write(printContent);
+        printWindow.document.close();
+        
+        // Wait for content to load before printing
+        printWindow.onload = function() {
+            printWindow.focus();
+            printWindow.print();
+            
+            // Close window after print dialog is handled
+            setTimeout(() => {
+                printWindow.close();
+            }, 1000);
+        };
+        
+        // Fallback for browsers that don't support onload
+        setTimeout(() => {
+            printWindow.focus();
+            printWindow.print();
+            setTimeout(() => {
+                printWindow.close();
+            }, 1000);
+        }, 500);
+    };
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                setLoading(true);
+                const appointmentsRes = await getMyAppointments().catch(() => ({ data: [] }));
+                const prescriptionsRes = await getMyPrescriptions().catch(() => ({ data: [] }));
+                const profileRes = await getMyProfile().catch(() => ({ data: null }));
+                setAppointments(appointmentsRes.data || []);
+                setPrescriptions(prescriptionsRes.data || []);
+                setPatientProfile(profileRes.data);
+                setError(null);
+            } catch (err) {
+                console.error("Failed to fetch patient data:", err);
+                setAppointments([]);
+                setPrescriptions([]);
+                setPatientProfile(null);
+                if (err.response && (err.response.status === 401 || err.response.status === 403)) {
+                    handleLogout();
+                } else {
+                    setError("Some data could not be loaded. Please check your connection.");
+                }
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchData();
+    }, []);
+
+    const handleLogout = () => {
+        removeToken();
+        navigate("/login");
+    };
+
+>>>>>>> e7ee58140669b1cf6ba47542fd6dfd5a84117303
     const getIcon = (iconName) => {
         const iconProps = { className: "w-5 h-5" };
         switch (iconName) {
@@ -392,6 +556,7 @@ const PatientDashboard = () => {
     };
 
     const Sidebar = () => (
+<<<<<<< HEAD
         <aside className={`fixed inset-y-0 left-0 z-50 w-72 bg-gray-50 text-gray-800 flex flex-col shadow-2xl border-r border-gray-200 transform ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0 transition-transform duration-300 ease-in-out`}>
             <div className="p-8 border-b border-gray-200">
                 <div className="flex items-center space-x-4">
@@ -404,13 +569,31 @@ const PatientDashboard = () => {
                     <div>
                         <h2 className="text-xl font-bold text-gray-800">HealthCare</h2>
                         <p className="text-sm text-gray-600 font-medium">Patient Portal</p>
+=======
+        <aside className={`fixed inset-y-0 left-0 z-50 w-72 bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 text-white flex flex-col shadow-2xl border-r border-slate-700 transform ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0 transition-transform duration-300 ease-in-out`}>
+            <div className="p-8 border-b border-slate-700/50">
+                <div className="flex items-center space-x-4">
+                    <div className="relative">
+                        <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center shadow-lg">
+                            <img src={logo} alt="HealthCare Logo" className="w-8 h-8" />
+                        </div>
+                        <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-slate-900"></div>
+                    </div>
+                    <div>
+                        <h2 className="text-xl font-bold text-white">HealthCare</h2>
+                        <p className="text-sm text-slate-400 font-medium">Patient Portal</p>
+>>>>>>> e7ee58140669b1cf6ba47542fd6dfd5a84117303
                     </div>
                 </div>
             </div>
 
             <nav className="flex-1 px-6 py-6 space-y-3">
                 <div className="mb-4">
+<<<<<<< HEAD
                     <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Main Menu</p>
+=======
+                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Main Menu</p>
+>>>>>>> e7ee58140669b1cf6ba47542fd6dfd5a84117303
                 </div>
                 
                 {navItems.map((item, i) => (
@@ -420,12 +603,21 @@ const PatientDashboard = () => {
                         onClick={() => setIsSidebarOpen(false)}
                         className={`group relative rounded-xl px-4 py-3.5 flex items-center space-x-3 cursor-pointer transition-all duration-200 ${
                             location.pathname === item.path
+<<<<<<< HEAD
                                 ? 'bg-cyan-300 text-white shadow-lg shadow-blue-600/25'
                                 : 'text-gray-700 hover:text-gray-900 hover:bg-white'
                         }`}
                     >
                         <div className={`p-2 rounded-lg transition-colors ${
                             location.pathname === item.path ? 'bg-amber-100 ' : 'bg-white group-hover:bg-gray-100'
+=======
+                                ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg shadow-emerald-500/25'
+                                : 'text-slate-300 hover:text-white hover:bg-slate-800/50'
+                        }`}
+                    >
+                        <div className={`p-2 rounded-lg transition-colors ${
+                            location.pathname === item.path ? 'bg-white/20' : 'bg-slate-700/50 group-hover:bg-slate-600/50'
+>>>>>>> e7ee58140669b1cf6ba47542fd6dfd5a84117303
                         }`}>
                             {getIcon(item.icon)}
                         </div>
@@ -435,27 +627,46 @@ const PatientDashboard = () => {
                 ))}
             </nav>
 
+<<<<<<< HEAD
             <div className="p-6 border-t border-gray-200 bg-white">
                 <div className="flex items-center space-x-4 mb-6">
                     <div className="relative">
                         <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg">
+=======
+            <div className="p-6 border-t border-slate-700/50 bg-slate-800/30">
+                <div className="flex items-center space-x-4 mb-6">
+                    <div className="relative">
+                        <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center shadow-lg">
+>>>>>>> e7ee58140669b1cf6ba47542fd6dfd5a84117303
                             <img
                                 src={localStorage.getItem('profilePicture') || "https://i.pravatar.cc/48?img=5"}
                                 alt="Profile"
                                 className="w-10 h-10 rounded-lg object-cover"
                             />
                         </div>
+<<<<<<< HEAD
                         <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-white"></div>
                     </div>
                     <div className="flex-1">
                         <p className="text-sm font-semibold text-gray-800">{patientProfile ? `${patientProfile.firstName} ${patientProfile.lastName}` : userEmail}</p>
                         <p className="text-xs text-gray-600">Patient ID: P{patientProfile?.id || '----'}</p>
+=======
+                        <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-slate-800"></div>
+                    </div>
+                    <div className="flex-1">
+                        <p className="text-sm font-semibold text-white">{patientProfile ? `${patientProfile.firstName} ${patientProfile.lastName}` : userEmail}</p>
+                        <p className="text-xs text-slate-400">Patient ID: P{patientProfile?.id || '----'}</p>
+>>>>>>> e7ee58140669b1cf6ba47542fd6dfd5a84117303
                     </div>
                 </div>
                 
                 <button
                     onClick={handleLogout}
+<<<<<<< HEAD
                     className="w-full bg-red-600 hover:bg-red-700 text-white px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-[1.02] flex items-center justify-center space-x-2"
+=======
+                    className="w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-[1.02] flex items-center justify-center space-x-2"
+>>>>>>> e7ee58140669b1cf6ba47542fd6dfd5a84117303
                 >
                     <LogOut size={16} />
                     <span>Logout</span>
@@ -500,6 +711,7 @@ const PatientDashboard = () => {
                                     {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
                                 </p>
                             </div>
+<<<<<<< HEAD
                             <button
                                 onClick={handleLogout}
                                 className="bg-red-600 hover:bg-red-700 text-red-600 px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-[1.02] flex items-center space-x-2"
@@ -508,6 +720,8 @@ const PatientDashboard = () => {
                                 <LogOut size={16} />
                                 <span className="hidden sm:inline">Logout</span>
                             </button>
+=======
+>>>>>>> e7ee58140669b1cf6ba47542fd6dfd5a84117303
                             <div className="flex items-center space-x-3">
                                 <img
                                     src={localStorage.getItem('profilePicture') || "https://i.pravatar.cc/40?img=5"}
@@ -532,7 +746,11 @@ const PatientDashboard = () => {
                         ) : error ? (
                             <div className="text-center p-10 text-red-500">{error}</div>
                         ) : (
+<<<<<<< HEAD
                             <DashboardHome />
+=======
+                            <DashboardHome appointments={appointments} patientProfile={patientProfile} />
+>>>>>>> e7ee58140669b1cf6ba47542fd6dfd5a84117303
                         )
                     } />
                     <Route path="doctors" element={<DoctorsList />} />
@@ -557,7 +775,11 @@ const PatientDashboard = () => {
                                             <div key={prescription.id} className="p-6 hover:bg-purple-50/50 transition-colors">
                                                 <div className="flex items-start justify-between mb-4">
                                                     <div className="flex items-center space-x-4">
+<<<<<<< HEAD
                                                         <div className="w-12 h-12 bg-linear-to-br from-purple-500 to-indigo-600 rounded-xl flex items-center justify-center">
+=======
+                                                        <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-xl flex items-center justify-center">
+>>>>>>> e7ee58140669b1cf6ba47542fd6dfd5a84117303
                                                             <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                                             </svg>

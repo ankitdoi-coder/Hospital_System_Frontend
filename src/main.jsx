@@ -4,8 +4,8 @@ import { Provider } from 'react-redux'
 import './index.css'
 import App from './App.jsx'
 import { store } from './store'
-import { setupAxiosInterceptors, getToken, isAuthenticated } from './Services/AuthService.js'
-
+import { setupAxiosInterceptors } from './API/axiosConfig';
+import { getToken, isAuthenticated } from './Services/AuthService';
 // Setup axios interceptors BEFORE rendering
 setupAxiosInterceptors();
 

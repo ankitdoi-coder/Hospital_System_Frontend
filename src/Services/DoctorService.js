@@ -1,24 +1,22 @@
-import { axiosInstance } from './AuthService';
-
-const REST_API_BASE_URL = '/api/doctor';
+import apiClient from '../API/apiClient';
 
 // Get my appointments as a doctor
-export const getMyAppointments = () => axiosInstance.get(`${REST_API_BASE_URL}/appointments/my`);
+export const getMyAppointments = () => apiClient.get('/api/doctor/appointments/my');
 
 // Update appointment status
-export const updateAppointmentStatus = (appointmentId, status) =>
-    axiosInstance.put(`${REST_API_BASE_URL}/appointments/${appointmentId}/status`, { status });
+export const updateAppointmentStatus = (appointmentId, status) => 
+    apiClient.put(`/api/doctor/appointments/${appointmentId}/status`, { status });
 
 // Create prescription for a patient
-export const createPrescription = (prescriptionData) =>
-    axiosInstance.post(`${REST_API_BASE_URL}/prescription`, prescriptionData);
+export const createPrescription = (prescriptionData) => 
+    apiClient.post('/api/doctor/prescription', prescriptionData);
 
 // Get all patients for the doctor
-export const getMyPatients = () => axiosInstance.get(`${REST_API_BASE_URL}/patients`);
+export const getMyPatients = () => apiClient.get('/api/doctor/patients');
 
 // Get all prescriptions created by the doctor
-export const getMyPrescriptions = () => axiosInstance.get(`${REST_API_BASE_URL}/prescriptions`);
+export const getMyPrescriptions = () => apiClient.get('/api/doctor/prescriptions');
 
 // Get prescriptions for an appointment (if needed later)
-export const getPrescriptions = (appointmentId) =>
-    axiosInstance.get(`${REST_API_BASE_URL}/prescriptions/appointment/${appointmentId}`);
+export const getPrescriptions = (appointmentId) => 
+    apiClient.get(`/api/doctor/prescriptions/appointment/${appointmentId}`);

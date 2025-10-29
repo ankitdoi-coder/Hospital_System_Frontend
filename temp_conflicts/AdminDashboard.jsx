@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+<<<<<<< HEAD
 import { useAppSelector, useAppDispatch } from '../../store/hooks';
 // eslint-disable-next-line no-unused-vars
 import { setDoctors, setPendingDoctors, setLoading as setDoctorsLoading, approveDoctor as approveDoctorAction } from '../../store/slices/doctorsSlice';
 import { setPatients, setLoading as setPatientsLoading } from '../../store/slices/patientsSlice';
+=======
+>>>>>>> e7ee58140669b1cf6ba47542fd6dfd5a84117303
 import { removeToken, getUserEmail, isAuthenticated, setupAxiosInterceptors } from "../../Services/AuthService.js";
 import { getDoctors, approveDoctor, rejectDoctor, getPatients, getBilling, updateBillingStatus, getDailyRevenue, getMonthlyRevenue } from "../../Services/AdminService.js";
 import logo from "../../assets/OnlyLogo.svg"
@@ -12,20 +15,31 @@ const AdminDashboard = () => {
     const navigate = useNavigate();
     const dispatch = useAppDispatch();
     const userEmail = getUserEmail();
+<<<<<<< HEAD
     
     // Redux state
     const { list: doctors, loading: doctorsLoading } = useAppSelector(state => state.doctors);
     const { list: patients, loading: patientsLoading } = useAppSelector(state => state.patients);
     
     // Local state
+=======
+    const [doctors, setDoctors] = useState([]);
+    const [patients, setPatients] = useState([]);
+>>>>>>> e7ee58140669b1cf6ba47542fd6dfd5a84117303
     const [billing, setBilling] = useState([]);
     const [dailyRevenue, setDailyRevenue] = useState(0);
     const [monthlyRevenue, setMonthlyRevenue] = useState(0);
     const [activeTab, setActiveTab] = useState('doctors');
+<<<<<<< HEAD
     const [error, setError] = useState(null);
     const [actionLoading, setActionLoading] = useState(null);
     
     const loading = activeTab === 'doctors' ? doctorsLoading : activeTab === 'patients' ? patientsLoading : false;
+=======
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [actionLoading, setActionLoading] = useState(null);
+>>>>>>> e7ee58140669b1cf6ba47542fd6dfd5a84117303
 
     useEffect(() => {
         // Set up axios interceptors first
@@ -47,10 +61,17 @@ const AdminDashboard = () => {
     const fetchDoctors = async () => {
         try {
             setError(null);
+<<<<<<< HEAD
             dispatch(setDoctorsLoading(true));
             
             const response = await getDoctors();
             dispatch(setDoctors(response.data));
+=======
+            setLoading(true);
+            
+            const response = await getDoctors();
+            setDoctors(response.data);
+>>>>>>> e7ee58140669b1cf6ba47542fd6dfd5a84117303
             console.log('✅ Doctors fetched successfully:', response.data.length);
         } catch (error) {
             console.error('Error fetching doctors:', error);
@@ -63,15 +84,24 @@ const AdminDashboard = () => {
             
             setError('Failed to load doctors. Please try again.');
         } finally {
+<<<<<<< HEAD
             dispatch(setDoctorsLoading(false));
+=======
+            setLoading(false);
+>>>>>>> e7ee58140669b1cf6ba47542fd6dfd5a84117303
         }
     };
 
     const fetchPatients = async () => {
         try {
+<<<<<<< HEAD
             dispatch(setPatientsLoading(true));
             const response = await getPatients();
             dispatch(setPatients(response.data));
+=======
+            const response = await getPatients();
+            setPatients(response.data);
+>>>>>>> e7ee58140669b1cf6ba47542fd6dfd5a84117303
             console.log('✅ Patients fetched successfully:', response.data.length);
         } catch (error) {
             console.error('Error fetching patients:', error);
@@ -79,8 +109,11 @@ const AdminDashboard = () => {
                 return;
             }
             setError('Failed to load patients. Please try again.');
+<<<<<<< HEAD
         } finally {
             dispatch(setPatientsLoading(false));
+=======
+>>>>>>> e7ee58140669b1cf6ba47542fd6dfd5a84117303
         }
     };
 
@@ -127,7 +160,15 @@ const AdminDashboard = () => {
             console.log('✅ Approve response:', response.data);
             
             // Update the specific doctor in state immediately
+<<<<<<< HEAD
             dispatch(approveDoctorAction(id));
+=======
+            setDoctors(prevDoctors => 
+                prevDoctors.map(doctor => 
+                    doctor.id === id ? { ...doctor, isApproved: true } : doctor
+                )
+            );
+>>>>>>> e7ee58140669b1cf6ba47542fd6dfd5a84117303
             
             console.log('✅ Doctor approved successfully');
             showNotification('Doctor approved successfully!', 'success');
@@ -152,10 +193,18 @@ const AdminDashboard = () => {
             await rejectDoctor(id);
             
             // Update the specific doctor in state immediately
+<<<<<<< HEAD
             const updatedDoctors = doctors.map(doctor => 
                 doctor.id === id ? { ...doctor, isApproved: false } : doctor
             );
             dispatch(setDoctors(updatedDoctors));
+=======
+            setDoctors(prevDoctors => 
+                prevDoctors.map(doctor => 
+                    doctor.id === id ? { ...doctor, isApproved: false } : doctor
+                )
+            );
+>>>>>>> e7ee58140669b1cf6ba47542fd6dfd5a84117303
             
             console.log('✅ Doctor status updated successfully');
             

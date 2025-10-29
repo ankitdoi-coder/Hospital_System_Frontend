@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+<<<<<<< HEAD
 import { useAppSelector, useAppDispatch } from '../../store/hooks';
 import { setAppointments, setLoading, updateAppointment, setPatients } from '../../store/slices/appointmentsSlice';
 import { setPrescriptions, addPrescription } from '../../store/slices/prescriptionsSlice';
 import { selectCompletedAppointments, selectPendingAppointments, selectScheduledAppointments, selectTodayAppointments } from '../../store/selectors';
+=======
+>>>>>>> e7ee58140669b1cf6ba47542fd6dfd5a84117303
 import { removeToken, getUserEmail, setupAxiosInterceptors } from "../../Services/AuthService.js";
 // eslint-disable-next-line no-unused-vars
 import { getMyAppointments, updateAppointmentStatus, createPrescription, getMyPatients, getMyPrescriptions } from "../../Services/DoctorService.js";
@@ -18,17 +21,27 @@ const DoctorDashboard = () => {
     const navigate = useNavigate();
     const dispatch = useAppDispatch();
     const userEmail = getUserEmail();
+<<<<<<< HEAD
     
     // Redux state
     const { list: appointments, loading, patients } = useAppSelector(state => state.appointments);
     const { list: prescriptions } = useAppSelector(state => state.prescriptions);
     
     // Local state
+=======
+    const [appointments, setAppointments] = useState([]);
+    const [loading, setLoading] = useState(true);
+>>>>>>> e7ee58140669b1cf6ba47542fd6dfd5a84117303
     const [selectedAppointment, setSelectedAppointment] = useState(null);
     const [prescriptionData, setPrescriptionData] = useState({ medicationDetails: '', dosages: '' });
     const [showPrescriptionModal, setShowPrescriptionModal] = useState(false);
     const [activeView, setActiveView] = useState('dashboard');
     const [currentDate, setCurrentDate] = useState(new Date());
+<<<<<<< HEAD
+=======
+    const [patients, setPatients] = useState([]);
+    const [prescriptions, setPrescriptions] = useState([]);
+>>>>>>> e7ee58140669b1cf6ba47542fd6dfd5a84117303
     const [searchTerm, setSearchTerm] = useState('');
     const [editingPrescription, setEditingPrescription] = useState(null);
     const [showEditModal, setShowEditModal] = useState(false);
@@ -64,7 +77,11 @@ const DoctorDashboard = () => {
             }
         });
         
+<<<<<<< HEAD
         dispatch(setPatients(uniquePatients));
+=======
+        setPatients(uniquePatients);
+>>>>>>> e7ee58140669b1cf6ba47542fd6dfd5a84117303
     };
 
     const fetchPrescriptions = async () => {
@@ -72,10 +89,17 @@ const DoctorDashboard = () => {
             console.log('Fetching prescriptions...');
             const response = await getMyPrescriptions();
             console.log('Prescriptions response:', response.data);
+<<<<<<< HEAD
             dispatch(setPrescriptions(response.data || []));
         } catch (error) {
             console.error('Error fetching prescriptions:', error);
             dispatch(setPrescriptions([]));
+=======
+            setPrescriptions(response.data || []);
+        } catch (error) {
+            console.error('Error fetching prescriptions:', error);
+            setPrescriptions([]);
+>>>>>>> e7ee58140669b1cf6ba47542fd6dfd5a84117303
         }
     };
 
@@ -94,6 +118,7 @@ const DoctorDashboard = () => {
 
     const fetchAppointments = async () => {
         try {
+<<<<<<< HEAD
             dispatch(setLoading(true));
             const response = await getMyAppointments();
             dispatch(setAppointments(response.data));
@@ -101,13 +126,26 @@ const DoctorDashboard = () => {
             console.error('Error fetching appointments:', error);
         } finally {
             dispatch(setLoading(false));
+=======
+            const response = await getMyAppointments();
+            setAppointments(response.data);
+        } catch (error) {
+            console.error('Error fetching appointments:', error);
+        } finally {
+            setLoading(false);
+>>>>>>> e7ee58140669b1cf6ba47542fd6dfd5a84117303
         }
     };
 
     const handleStatusUpdate = async (appointmentId, newStatus) => {
         try {
+<<<<<<< HEAD
             const response = await updateAppointmentStatus(appointmentId, newStatus);
             dispatch(updateAppointment(response.data));
+=======
+            await updateAppointmentStatus(appointmentId, newStatus);
+            fetchAppointments();
+>>>>>>> e7ee58140669b1cf6ba47542fd6dfd5a84117303
         } catch (error) {
             console.error('Error updating status:', error);
         }
@@ -121,10 +159,17 @@ const DoctorDashboard = () => {
                 dosages: prescriptionData.dosages
             };
             
+<<<<<<< HEAD
             const response = await createPrescription(prescription);
             dispatch(addPrescription(response.data));
             setShowPrescriptionModal(false);
             setPrescriptionData({ medicationDetails: '', dosages: '' });
+=======
+            await createPrescription(prescription);
+            setShowPrescriptionModal(false);
+            setPrescriptionData({ medicationDetails: '', dosages: '' });
+            fetchPrescriptions();
+>>>>>>> e7ee58140669b1cf6ba47542fd6dfd5a84117303
             alert('Prescription created successfully!');
         } catch (error) {
             console.error('Error creating prescription:', error);
@@ -186,10 +231,19 @@ const DoctorDashboard = () => {
         navigate('/login');
     };
 
+<<<<<<< HEAD
     const completedAppointments = useAppSelector(selectCompletedAppointments).length;
     const pendingAppointments = useAppSelector(selectPendingAppointments).length;
     const scheduledAppointments = useAppSelector(selectScheduledAppointments).length;
     const todayAppointments = useAppSelector(selectTodayAppointments).length;
+=======
+    const completedAppointments = appointments.filter(apt => apt.status === 'COMPLETED').length;
+    const pendingAppointments = appointments.filter(apt => apt.status === 'PENDING').length;
+    const scheduledAppointments = appointments.filter(apt => apt.status === 'SCHEDULED').length;
+    const todayAppointments = appointments.filter(apt => 
+        new Date(apt.appointmentDate).toDateString() === new Date().toDateString()
+    ).length;
+>>>>>>> e7ee58140669b1cf6ba47542fd6dfd5a84117303
 
     // Calendar helper functions
     const getDaysInMonth = (date) => {
