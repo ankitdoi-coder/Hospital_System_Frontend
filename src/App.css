@@ -1,1 +1,9 @@
 @import "tailwindcss";
+selector {
+  background-color: green;
+}
+@media (prefers-color-scheme: light) {
+    button {
+        background-color: #a6a6a6 !important;
+    }
+}

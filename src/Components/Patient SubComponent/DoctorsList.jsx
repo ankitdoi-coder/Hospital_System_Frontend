@@ -1,22 +1,14 @@
 import { useState, useEffect } from 'react';
-<<<<<<< HEAD
 import { useAppSelector, useAppDispatch } from '../../store/hooks';
 import { setDoctors, setLoading } from '../../store/slices/doctorsSlice';
 import { addAppointment } from '../../store/slices/appointmentsSlice';
-=======
->>>>>>> e7ee58140669b1cf6ba47542fd6dfd5a84117303
 import { getDoctors, bookAppointment } from '../../Services/PatientService.js';
 import { Link } from 'react-router-dom';
 
 const DoctorsList = () => {
-<<<<<<< HEAD
     const dispatch = useAppDispatch();
     const { list: doctors, loading } = useAppSelector(state => state.doctors);
     
-=======
-    const [doctors, setDoctors] = useState([]);
-    const [loading, setLoading] = useState(true);
->>>>>>> e7ee58140669b1cf6ba47542fd6dfd5a84117303
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedDepartment, setSelectedDepartment] = useState('');
     const [showModal, setShowModal] = useState(false);
@@ -28,7 +20,6 @@ const DoctorsList = () => {
     useEffect(() => {
         const fetchDoctors = async () => {
             try {
-<<<<<<< HEAD
                 dispatch(setLoading(true));
                 const response = await getDoctors();
                 dispatch(setDoctors(response.data));
@@ -40,18 +31,6 @@ const DoctorsList = () => {
         };
         fetchDoctors();
     }, [dispatch]);
-=======
-                const response = await getDoctors();
-                setDoctors(response.data);
-            } catch (error) {
-                console.error('Failed to fetch doctors:', error);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchDoctors();
-    }, []);
->>>>>>> e7ee58140669b1cf6ba47542fd6dfd5a84117303
 
     const filteredDoctors = doctors.filter(doctor => {
         const fullName = `${doctor.firstName} ${doctor.lastName}`.toLowerCase();
@@ -78,18 +57,11 @@ const DoctorsList = () => {
 
         try {
             setBooking(true);
-<<<<<<< HEAD
             const response = await bookAppointment({
                 doctorId: selectedDoctor.id,
                 appointmentDate: appointmentDate
             });
             dispatch(addAppointment(response.data));
-=======
-            await bookAppointment({
-                doctorId: selectedDoctor.id,
-                appointmentDate: appointmentDate
-            });
->>>>>>> e7ee58140669b1cf6ba47542fd6dfd5a84117303
             alert('Appointment booked successfully!');
             setShowModal(false);
             setAppointmentDate('');

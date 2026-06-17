@@ -1,19 +1,14 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useForm } from 'react-hook-form';
 // eslint-disable-next-line no-unused-vars
 import { motion } from 'framer-motion';
 // Using lucide-react for a consistent icon style across the app
 import { Phone, Mail, MapPin, Clock, User, MessageSquare, Send, RefreshCw } from 'lucide-react';
+import apiClient from '../../API/axiosConfig';
+import { toast } from 'sonner';
 
 const ContactUs = () => {
-    // State to manage form inputs
-    const [formData, setFormData] = useState({
-        firstName: '',
-        lastName: '',
-        mobileNo: '',
-        email: '',
-        message: '',
-        captcha: ''
-    });
+    const { register, handleSubmit: handleFormSubmit, reset, formState: { errors } } = useForm();
 
     // State for the dynamic CAPTCHA
     const [captchaText, setCaptchaText] = useState('');
@@ -49,28 +44,26 @@ const ContactUs = () => {
     ), []);
 
 
-    // eslint-disable-next-line no-unused-vars
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData(prevState => ({ ...prevState, [name]: value }));
-    };
-
-    const handleSubmit = (e) => {
-        e.preventDefault();
+    const onSubmit = async (data) => {
         if (captchaInput !== captchaText) {
             alert("CAPTCHA validation failed. Please try again.");
-            generateCaptcha(); // Refresh CAPTCHA on failure
+            generateCaptcha();
             setCaptchaInput('');
             return;
         }
 
-        console.log("Form Submitted:", formData);
-        alert("Thank you for your message! We will get back to you shortly.");
-
-        // Reset form and CAPTCHA
-        setFormData({ firstName: '', lastName: '', mobileNo: '', email: '', message: '' });
-        setCaptchaInput('');
-        generateCaptcha();
+        try {
+            await apiClient.post('/api/contact', data);
+            // alert("Thank you for your message! We will get back to you shortly.");
+            toast.success("Thank you for your message! We will get back to you shortly.")
+            reset();
+            setCaptchaInput('');
+            generateCaptcha();
+        } catch (error) {
+            // alert("Failed to submit. Please try again.");
+            toast.error("Failed to submit. Please try again.")
+            console.error(error);
+        }
     };
 
     // Animation Variants
@@ -136,13 +129,35 @@ const ContactUs = () => {
                     {/* Right Side: Contact Form */}
                     <div className="bg-white p-8 md:p-12">
                         <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-800 mb-6">Send us a Message</h2>
-                        <form onSubmit={handleSubmit} className="space-y-5">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                                <div className="relative"><User className="absolute top-1/2 left-3 -translate-y-1/2 text-gray-400" /><input type="text" name="firstName" placeholder="First Name *" required className="w-full pl-10 p-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500" /></div>
-                                <div className="relative"><User className="absolute top-1/2 left-3 -translate-y-1/2 text-gray-400" /><input type="text" name="lastName" placeholder="Last Name" className="w-full pl-10 p-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500" /></div>
+                        <form onSubmit={handleFormSubmit(onSubmit)} className="space-y-5">
+                            <div>
+                                <div className="relative">
+                                    <User className="absolute top-1/2 left-3 -translate-y-1/2 text-gray-400" />
+                                    <input {...register('name', { required: 'Name is required' })} type="text" placeholder="Full Name *" className="w-full pl-10 p-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500" />
+                                </div>
+                                {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>}
                             </div>
-                            <div className="relative"><Mail className="absolute top-1/2 left-3 -translate-y-1/2 text-gray-400" /><input type="email" name="email" placeholder="Email ID *" required className="w-full pl-10 p-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500" /></div>
-                            <div className="relative"><MessageSquare className="absolute top-4 left-3 text-gray-400" /><textarea name="message" placeholder="Your Message" rows="4" className="w-full pl-10 p-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"></textarea></div>
+                            <div>
+                                <div className="relative">
+                                    <Mail className="absolute top-1/2 left-3 -translate-y-1/2 text-gray-400" />
+                                    <input {...register('email', { required: 'Email is required', pattern: { value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i, message: 'Invalid email' } })} type="email" placeholder="Email ID *" className="w-full pl-10 p-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500" />
+                                </div>
+                                {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>}
+                            </div>
+                            <div>
+                                <div className="relative">
+                                    <MessageSquare className="absolute top-1/2 left-3 -translate-y-1/2 text-gray-400" />
+                                    <input {...register('subject', { required: 'Subject is required' })} type="text" placeholder="Subject *" className="w-full pl-10 p-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500" />
+                                </div>
+                                {errors.subject && <p className="text-red-500 text-sm mt-1">{errors.subject.message}</p>}
+                            </div>
+                            <div>
+                                <div className="relative">
+                                    <MessageSquare className="absolute top-4 left-3 text-gray-400" />
+                                    <textarea {...register('message', { required: 'Message is required' })} placeholder="Your Message *" rows="4" className="w-full pl-10 p-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"></textarea>
+                                </div>
+                                {errors.message && <p className="text-red-500 text-sm mt-1">{errors.message.message}</p>}
+                            </div>
                             <div>
                                 <label className="text-sm font-medium text-gray-700">Please solve the CAPTCHA *</label>
                                 <div className="flex items-center gap-4 mt-2">

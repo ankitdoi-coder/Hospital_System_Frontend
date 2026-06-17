@@ -6,6 +6,7 @@ import Layout from './Components/Landing_Pages_Components/Layout';
 import ContactUs from './Components/Landing_Pages_Components/ContactUs';
 import ForgotPassword from './Components/Landing_Pages_Components/ForgotPassword';
 import ResetPassword from './Components/Landing_Pages_Components/ResetPassword';
+import OAuth2RedirectHandler from './Components/Landing_Pages_Components/OAuth2RedirectHandler';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import Error404 from './Components/Landing_Pages_Components/Error404';
 import AboutUs from './Components/Landing_Pages_Components/AboutUs';
@@ -13,14 +14,14 @@ import ServicesPage from './Components/Landing_Pages_Components/ServicesPage';
 import AppointmentService from './Components/Landing_Pages_Components/AppointmentService';
 import Demoform from './Components/Landing_Pages_Components/Demoform';
 
-// Import Dashboard components (create these)
+// Import Dashboard components
 import PatientDashboard from './Components/DashBoards/PatientDashboard';
 import DoctorDashboard from './Components/DashBoards/DoctorDashboard';
 import AdminDashboard from './Components/DashBoards/AdminDashboard';
 import Unathorized from './Components/Unathorized';
 // Import ProtectedRoute component
 import ProtectedRoute from './Components/DashBoards/ProtectedRoute';
-
+import { Toaster } from 'sonner';
 function App() {
   const router = createBrowserRouter([
     {
@@ -66,6 +67,10 @@ function App() {
         {
           path: "/appointment",
           element: <AppointmentService />
+        },
+        {
+          path: "/oauth2/redirect",
+          element: <OAuth2RedirectHandler />
         }
       ]
     },
@@ -110,8 +115,11 @@ function App() {
   ]);
 
   return (
+     
     <div className="overflow-x-hidden bg-white-100 bg-cover bg-center bg-no-repeat w-screen h-screen">
       <RouterProvider router={router} />
+      <Toaster richColors position="top-right" />
+      
     </div>
   );
 }

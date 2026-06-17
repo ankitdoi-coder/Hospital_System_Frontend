@@ -15,7 +15,7 @@ const Register = () => {
         handleSubmit,
         watch,
         formState: { errors, isSubmitting },
-    } = useForm({
+    }= useForm({
         defaultValues: {
             firstName: '',
             lastName: '',
@@ -40,6 +40,9 @@ const Register = () => {
         });
     };
     const Navigator = useNavigate();
+
+
+    //function to submit
     const onSubmit = async (data) => {
         await delay(2); // Simulating network delay
 
