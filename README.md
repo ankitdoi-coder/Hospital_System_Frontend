@@ -3,6 +3,7 @@
 
 This repository contains the frontend application for the **Smart Healthcare Appointment & Records System**. It is a modern, responsive, and user-friendly web interface built with **React**, providing a seamless user experience for patients, doctors, and administrators to interact with the backend services.
 
+
 ## ✨ Features
 
 This application provides a dedicated, role-based interface for each user, leveraging the backend API endpoints.
