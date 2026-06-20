@@ -1,134 +1,231 @@
-🏥 Healthcare Service Frontend
-=============================
+# 🏥 Smart Healthcare System — Frontend
 
-This repository contains the frontend application for the **Smart Healthcare Appointment & Records System**. It is a modern, responsive, and user-friendly web interface built with **React**, providing a seamless user experience for patients, doctors, and administrators to interact with the backend services.
+> A production-grade, full stack healthcare web application built with **React 19 + Vite** on the frontend and **Spring Boot 3 + Spring Security + MySQL** on the backend. Designed to demonstrate end-to-end Java Full Stack development capabilities — from JWT-secured REST APIs to a responsive, role-based React UI.
 
+**🔗 Backend Repository:** [HealthCare-Backend](https://github.com/ankitdoi-coder/HealthCare-Backend) — Spring Boot 3 | Spring Security | JPA/Hibernate | MySQL | JWT | OAuth2
+
+---
+
+## 🧑‍💻 What This Project Demonstrates (Java Full Stack Perspective)
+
+> As a Java Full Stack Developer, this project showcases ownership of the **entire vertical slice** — from database schema design to REST API development to a fully functional React UI.
+
+| Layer | Technology | What Was Built |
+|---|---|---|
+| **Backend** | Spring Boot 3 | RESTful APIs with full CRUD for Patients, Doctors, Appointments, Prescriptions |
+| **Security** | Spring Security + JWT | Stateless auth, role-based access control (PATIENT / DOCTOR / ADMIN) |
+| **OAuth2** | Google OAuth2 + Spring Security | Social login with token redirect handling on the frontend |
+| **Database** | MySQL + JPA/Hibernate | Normalized relational schema, entity relationships, lazy loading |
+| **API Docs** | SpringDoc OpenAPI / Swagger UI | Self-documenting REST API at `/swagger-ui/index.html` |
+| **Frontend** | React 19 + Vite | Component-based SPA consuming all backend APIs |
+| **State** | Redux Toolkit | Centralized store: auth, appointments, doctors, patients, prescriptions |
+| **HTTP Layer** | Axios + Interceptors | Auto JWT injection, 401/403 handling, token refresh detection |
+| **Routing** | React Router v7 | Role-protected routes, redirect-after-login, 404/401 handling |
+| **Forms** | React Hook Form | Validated forms for login, register, appointments, prescriptions |
+| **UX** | Tailwind CSS v4 + Framer Motion | Responsive UI with smooth animations |
+
+---
 
 ## ✨ Features
 
-This application provides a dedicated, role-based interface for each user, leveraging the backend API endpoints.
+### 🔐 Authentication & Security
+- **JWT-based stateless login** — credentials sent to `/api/auth/login`, token decoded client-side for role & expiry
+- **Google OAuth2 Social Login** — Spring Security OAuth2 flow with a dedicated `OAuth2RedirectHandler` on the frontend
+- **Forgot Password / Reset Password** — token-based email reset flow (`/api/auth/forgot-password`, `/api/auth/reset-password`)
+- **JWT Expiry Monitoring** — background monitor warns user 5 minutes before session expiry and auto-redirects
+- **Axios Request Interceptor** — automatically attaches `Authorization: Bearer <token>` to every API call
+- **Axios Response Interceptor** — handles 401 (session expired) with redirect-to-login and 403 (forbidden) gracefully
+- **ProtectedRoute Component** — guards all dashboard routes; redirects unauthenticated users, blocks wrong roles
 
-### Patient Portal
+### 🧑‍⚕️ Patient Portal
+- Dashboard with personal profile and upcoming appointment summary
+- Browse and search doctors by specialty or name
+- Book new appointments from available time slots
+- View full appointment history with status (SCHEDULED / COMPLETED / CANCELLED)
+- Access prescriptions linked to completed appointments
+- Profile picture upload and profile settings management
 
-- **Dashboard:** View personal information and upcoming appointments.
-- **Find Doctors:** Browse and search for doctors by specialty or name.
-- **Book Appointments:** Select a doctor and schedule an appointment from available slots.
-- **Appointment History:** Review past appointments and view associated prescriptions.
+### 👨‍⚕️ Doctor Portal
+- Dashboard showing today's appointment schedule
+- Access patient records for completed consultations
+- Create and issue prescriptions after consultations
 
-### Doctor Portal
+### 🔧 Admin Portal
+- View all registered doctors including those with pending approval
+- Approve new doctor registrations to grant system access
+- View and manage all registered patients
 
-- **Dashboard:** See a schedule of upcoming appointments for the day.
-- **Patient Records:** Access the history of patients with completed appointments.
-- **Create Prescriptions:** Write and issue new prescriptions for patients after a consultation.
+### 🌐 Public Landing Pages
+- Home, About Us, Services, Appointment Info, Contact Us
+- Responsive Navbar and Footer
+- Animated UI with Framer Motion
 
-### Admin Portal
+---
 
-- **Doctor Management:** View a list of all doctors, including those with pending registration.
-- **Approve Doctors:** Review and approve new doctor registrations to grant them system access.
-- **Patient Management:** View and manage a list of all registered patients in the system.
+## 🏛️ Architecture
 
-## 🏛️ Architecture Overview
+```
+src/
+├── API/                    # Axios instance & config (baseURL from .env)
+├── Services/               # Service layer — one file per domain
+│   ├── AuthService.js      # JWT decode, token management, axios interceptors
+│   ├── PatientService.js   
+│   ├── DoctorService.js    
+│   ├── AdminService.js     
+│   └── ProfileService.js   
+├── store/                  # Redux Toolkit store
+│   ├── slices/             # authSlice, appointmentsSlice, doctorsSlice, patientsSlice, prescriptionsSlice
+│   ├── thunks/             # Async thunks for API calls
+│   └── selectors/          # Memoized selectors
+├── Components/
+│   ├── DashBoards/         # PatientDashboard, DoctorDashboard, AdminDashboard, ProtectedRoute
+│   ├── Landing_Pages_Components/   # Home, Login, Register, ForgotPassword, ResetPassword, OAuth2RedirectHandler
+│   └── Patient SubComponent/       # AppointmentHistory, DoctorsList, NewAppointment
+└── App.jsx                 # Router config with role-based protected routes
+```
 
-This frontend follows a modern component-based architecture using React to create a modular and maintainable user interface.
+**Key architectural decisions:**
+- **Service Layer Pattern** — mirrors the backend `@Service` layer; each domain has its own service file wrapping Axios calls
+- **Redux Slices** — separate slices per entity, matching backend entity structure (Appointment, Doctor, Patient, Prescription)
+- **Thunks for Async** — all API calls live in thunks, keeping components clean and testable
+- **ProtectedRoute HOC** — declarative route guarding with `allowedRoles` prop, mirrors Spring Security's `@PreAuthorize`
 
-- **Components Layer:** The UI is built from small, reusable components (e.g., Button, AppointmentCard, DoctorProfile). These are organized into larger "View" components that represent full pages.
-- **Routing Layer:** React Router is used to handle client-side navigation, directing users to the correct views based on the URL and protecting routes based on user roles (e.g., a patient cannot access the admin dashboard).
-- **State Management Layer:** A centralized store (like Redux Toolkit) will manage the application's state, such as user authentication status, lists of doctors, and appointment data. This ensures data is consistent across the application.
-- **API Service Layer:** Axios is used to create a dedicated layer for communicating with the backend REST API. It handles sending authenticated requests, fetching data, and processing responses, with interceptors for centralized token management.
+---
 
-## 💻 Technology Stack
+## 💻 Tech Stack
 
-| Component | Technology / Library | Purpose |
-|-----------|---------------------|---------|
-| UI Library | React 18.x | Core library for building the user interface with components. |
-| Build Tool | Vite | Modern, fast frontend build tool for development and production. |
-| Routing | React Router DOM | For client-side routing and navigation between pages. |
-| HTTP Client | Axios | Making promise-based HTTP requests to the backend API. |
-| State Management | Redux Toolkit & React Redux | Centralized and predictable state management for the entire application. |
-| Styling | Material-UI / Tailwind CSS | Component library and/or utility-first CSS for a clean, modern design. |
-| API Documentation | Swagger UI | Viewing and interacting with the backend API documentation. |
-| Package Manager | npm / Yarn | Managing project dependencies. |
-| Linting | ESLint / Prettier | Maintaining code quality and consistent formatting. |
-| Utilities | Lombok (for backend) | Reducing boilerplate code in the Java backend. |
+| | Technology | Version |
+|---|---|---|
+| Frontend Framework | React | 19.x |
+| Build Tool | Vite | 7.x |
+| Routing | React Router DOM | 7.x |
+| State Management | Redux Toolkit + React Redux | 2.x / 9.x |
+| HTTP Client | Axios | 1.x |
+| Styling | Tailwind CSS | 4.x |
+| Animations | Framer Motion | 12.x |
+| Forms | React Hook Form | 7.x |
+| Notifications | Sonner + React Hot Toast | latest |
+| Icons | Lucide React + React Icons | latest |
+| Backend | Spring Boot 3 | 3.x |
+| Security | Spring Security + JWT | stateless |
+| Social Auth | OAuth2 (Google) | — |
+| ORM | JPA / Hibernate | — |
+| Database | MySQL | 8.x |
+| API Docs | SpringDoc OpenAPI / Swagger | — |
 
-## 🔑 Client-Side Security
+---
 
-Security on the frontend is focused on managing authentication tokens and controlling user access to different parts of the application.
+## 🔑 Security Implementation
 
-- **Authentication:** Users log in via a dedicated login form, which sends credentials to the backend's `/auth/login` endpoint.
-- **Token Storage:** Upon successful login, the received JWT is stored securely in the browser's localStorage or sessionStorage.
-- **Authenticated Requests:** For all subsequent API calls to protected endpoints, an Axios interceptor automatically attaches the JWT to the `Authorization: Bearer <token>` header.
-- **Protected Routes:** Application routes are wrapped in a special component that checks for a valid JWT. If the user is not authenticated, they are redirected to the login page. The user's role (decoded from the token) is used to grant access to role-specific pages (e.g., Patient, Doctor, Admin).
+```
+Client                          Server
+  │                               │
+  │── POST /api/auth/login ───────►│ Spring Security AuthenticationManager
+  │◄── { token: "eyJ..." } ───────│ JwtTokenProvider generates token
+  │                               │
+  │  saveToken(token) → localStorage
+  │  decode payload → role, email, exp
+  │  dispatch(setAuth({ user, token, role }))
+  │                               │
+  │── GET /api/patient/appointments ►│
+  │   Authorization: Bearer eyJ...  │ JwtAuthFilter validates token
+  │◄── [ appointments ] ───────────│ @PreAuthorize("ROLE_PATIENT")
+```
 
-## 📖 API Documentation
+- Token expiry is checked client-side on every protected route render
+- A `TokenSyncProvider` component keeps Redux auth state in sync with localStorage on page refresh
+- OAuth2 Google login redirects to `/oauth2/redirect?token=...` — the `OAuth2RedirectHandler` extracts and stores the token, then dispatches to Redux and routes to the correct dashboard
 
-The backend service provides comprehensive and interactive API documentation using SpringDoc OpenAPI. This is essential for frontend development. The Swagger UI can be accessed once the backend server is running:
-```http://localhost:8080/swagger-ui/index.html#/```
+---
 
-This UI allows you to see all available endpoints, their required request bodies, and expected response models.
+## 🗄️ Database Schema
 
-🗄️ Database Schema
--------------------
+The backend uses a normalized relational schema with JPA entity relationships.
 
-The database schema is designed to be normalized and efficient, capturing the essential relationships within the healthcare system.
+![Database ER Diagram](https://raw.githubusercontent.com/ankitdoi-coder/HealthCare-Backend/main/Requirements%20&%20Architecture/04_ERD_DB.jpg)
 
- ![Database ER Diagram](https://raw.githubusercontent.com/ankitdoi-coder/HealthCare-Backend/main/Requirements%20&%20Architecture/04_ERD_DB.jpg)
+---
+
+## 🖼️ UI Screenshots
+
+| Page | Preview |
+|---|---|
+| Home | ![Home](./ScreenShots/Home.jpg) |
+| Login | ![Login](./ScreenShots/Login.jpg) |
+| Register | ![Register](./ScreenShots/Register.jpg) |
+| Appointment | ![Appointment](./ScreenShots/Appointment.jpg) |
+| About Us | ![About](./ScreenShots/AboutUs.jpg) |
+| Services | ![Services](./ScreenShots/Services.jpg) |
+
+---
 
 ## 🚀 Getting Started
 
-Follow these instructions to get a local instance of the application up and running for development.
-
 ### Prerequisites
+- Node.js v18+
+- Java JDK 17+
+- Maven 3.x
+- MySQL 8.x
 
-- **Node.js**: v18.x or later
-- **npm** or **Yarn**: Package manager
-- **Java**: JDK 17 or later
-- **Maven**: For building the backend
-- **MySQL**: Database for the backend
+### 1. Start the Backend
 
-### 1. Backend Setup
+```bash
+git clone https://github.com/ankitdoi-coder/HealthCare-Backend.git
+cd HealthCare-Backend
+# Configure application.properties with your MySQL credentials
+mvn spring-boot:run
+# Runs at http://localhost:8080
+# Swagger UI: http://localhost:8080/swagger-ui/index.html
+```
 
-First, ensure the backend server is running.
+### 2. Start the Frontend
 
-1.  **Clone the backend repository:**
-    ```bash
-    git clone https://github.com/ankitdoi-coder/HealthCare-Backend.git
-    cd HealthCare-Backend
-    ```
+```bash
+git clone https://github.com/ankitdoi-coder/HealthCare-Frontend.git
+cd HealthCare-Frontend
+npm install
+npm run dev
+# Runs at http://localhost:5173
+```
 
-2.  **Configure the database:**
-    - Create a new database in MySQL (e.g., `healthcaredb`).
-    - Update `src/main/resources/application.properties` with your database URL, username, and password.
+### 3. Environment Variables
 
-3.  **Run the backend server:**
-    ```bash
-    mvn spring-boot:run
-    ```
-    The backend will start on `http://localhost:8080`.
+Create `.env.local` if your backend runs on a different URL:
 
-### 2. Frontend Setup
+```env
+VITE_API_BASE_URL=http://localhost:8080
+```
 
-1.  **Clone this frontend repository:**
-    ```bash
-    git clone https://github.com/your-username/healthcare-frontend.git
-    cd healthcare-frontend
-    ```
+---
 
-2.  **Install dependencies:**
-    ```bash
-    npm install
-    ```
+## 📖 API Documentation
 
-3.  **Run the development server:**
-    ```bash
-    npm run dev
-    ```
-    The frontend application will be available at `http://localhost:5173`.
-
-### ⚙️ Environment Variables
-
-The frontend application expects the backend API to be running at `http://localhost:8080`. If your backend is on a different URL, create a `.env.local` file in the root of the frontend project and add the following variable:
+All backend endpoints are documented and explorable via Swagger UI:
 
 ```
-VITE_API_BASE_URL=http://your-backend-api-url
+http://localhost:8080/swagger-ui/index.html
 ```
+
+Covers: Auth, Patient, Doctor, Admin, Appointment, Prescription endpoints with request/response schemas.
+
+---
+
+## 🗂️ Wireframes & Design
+
+The UI was designed before development using Figma wireframes available in `WireFrames & Figma UI's/`:
+
+- Login & Register flows
+- Patient, Doctor, Admin panel layouts
+- Full system workflow diagram
+
+---
+
+## 👨‍💻 Author
+
+**Ankit** — Java Full Stack Developer
+
+- Built and owned the complete stack: Spring Boot backend + React frontend
+- Implemented end-to-end features: JWT auth, OAuth2 Google login, role-based access, full CRUD APIs, relational DB schema
+- Followed industry patterns: Service Layer, Repository Pattern, Redux Thunks, Protected Routes, Axios Interceptors
+
+> 📬 Open to Java Full Stack / Backend / Frontend opportunities. Feel free to connect!
