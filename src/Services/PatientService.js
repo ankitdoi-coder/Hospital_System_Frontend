@@ -20,3 +20,9 @@ export const makePayment = (appointmentId) => apiClient.put(`/api/patient/appoin
 
 // Cancel appointment
 export const cancelAppointment = (appointmentId) => apiClient.delete(`/api/patient/appointments/${appointmentId}/cancel`);
+
+// Notifications
+export const getMyNotifications = () => apiClient.get('/api/notifications/my');
+export const getUnreadCount = () => apiClient.get('/api/notifications/unread-count');
+export const markNotificationRead = (id) => apiClient.put(`/api/notifications/${id}/read`);
+export const markAllNotificationsRead = () => apiClient.put('/api/notifications/mark-all-read');

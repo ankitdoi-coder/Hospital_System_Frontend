@@ -6,7 +6,7 @@ import { setAppointments, setLoading } from '../../store/slices/appointmentsSlic
 import { setPrescriptions } from '../../store/slices/prescriptionsSlice';
 import { setCurrentPatient } from '../../store/slices/patientsSlice';
 import { removeToken, getUserEmail } from "../../Services/AuthService.js";
-import { getMyAppointments, getMyPrescriptions, getMyProfile } from "../../Services/PatientService.js";
+import { getMyAppointments, getMyPrescriptions, getMyProfile, getMyNotifications, getUnreadCount, markNotificationRead, markAllNotificationsRead } from "../../Services/PatientService.js";
 import { getProfilePictureFromLocal } from "../../Services/ProfileService.js";
 import logo from "../../assets/OnlyLogo.svg";
 import DoctorsList from "../Patient SubComponent/DoctorsList.jsx";
@@ -15,6 +15,125 @@ import AppointmentHistory from "../Patient SubComponent/AppointmentHistory.jsx";
 import ProfileSettings from "../ProfileSettings.jsx";
 import defaultpfp from "/deafaultpfp.jpg";
 
+
+/* ─────────────────────────────────────────────
+   NOTIFICATION BELL
+───────────────────────────────────────────── */
+const NotificationBell = () => {
+    const [open, setOpen] = useState(false);
+    const [notifications, setNotifications] = useState([]);
+    const [unreadCount, setUnreadCount] = useState(0);
+    const ref = React.useRef(null);
+
+    // fetch count on mount + whenever user focuses the tab
+    useEffect(() => {
+        const fetchCount = async () => {
+            try { const res = await getUnreadCount(); setUnreadCount(res.data); } catch {}
+        };
+        fetchCount();
+        window.addEventListener("focus", fetchCount);
+        return () => window.removeEventListener("focus", fetchCount);
+    }, []);
+
+    // close dropdown on outside click
+    useEffect(() => {
+        const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+        document.addEventListener("mousedown", handler);
+        return () => document.removeEventListener("mousedown", handler);
+    }, []);
+
+    // fetch list only when dropdown opens
+    const handleOpen = async () => {
+        const next = !open;
+        setOpen(next);
+        if (next) {
+            try { const res = await getMyNotifications(); setNotifications(res.data); } catch {}
+        }
+    };
+
+    const handleMarkRead = async (id) => {
+        try {
+            await markNotificationRead(id);
+            setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+            setUnreadCount(c => Math.max(0, c - 1));
+        } catch {}
+    };
+
+    const handleMarkAll = async () => {
+        try {
+            await markAllNotificationsRead();
+            setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+            setUnreadCount(0);
+        } catch {}
+    };
+
+    return (
+        <div ref={ref} style={{ position: "relative" }}>
+            <button onClick={handleOpen} className="btn-reset"
+                style={{ background: "none", border: "none", cursor: "pointer", color: "#6B7280", padding: 6, borderRadius: 8, display: "flex", position: "relative" }}>
+                <Bell size={19} />
+                {unreadCount > 0 && (
+                    <span style={{
+                        position: "absolute", top: 2, right: 2,
+                        background: "#DC2626", color: "#fff",
+                        fontSize: 10, fontWeight: 700,
+                        borderRadius: "50%", width: 16, height: 16,
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        lineHeight: 1,
+                    }}>{unreadCount > 99 ? "99+" : unreadCount}</span>
+                )}
+            </button>
+
+            {open && (
+                <div style={{
+                    position: "absolute", right: 0, top: "calc(100% + 8px)",
+                    width: 320, background: "#fff",
+                    border: "1px solid #E5E7EB", borderRadius: 10,
+                    boxShadow: "0 4px 20px rgba(0,0,0,0.12)",
+                    zIndex: 100, overflow: "hidden",
+                }}>
+                    {/* Header */}
+                    <div style={{ padding: "12px 16px", borderBottom: "1px solid #F3F4F6", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                        <span style={{ fontWeight: 700, fontSize: 14, color: "#111827" }}>Notifications</span>
+                        {notifications.some(n => !n.read) && (
+                            <button onClick={handleMarkAll} className="btn-reset"
+                                style={{ background: "none", border: "none", cursor: "pointer", fontSize: 12, color: "#2563EB", fontWeight: 600, padding: 0 }}>
+                                Mark all as read
+                            </button>
+                        )}
+                    </div>
+
+                    {/* List */}
+                    <div style={{ maxHeight: 340, overflowY: "auto" }}>
+                        {notifications.length === 0 ? (
+                            <p style={{ textAlign: "center", padding: "24px 0", color: "#9CA3AF", fontSize: 13 }}>No notifications</p>
+                        ) : notifications.map(n => (
+                            <div key={n.id} style={{
+                                padding: "12px 16px",
+                                borderBottom: "1px solid #F9FAFB",
+                                background: n.read ? "#fff" : "#EFF6FF",
+                                display: "flex", flexDirection: "column", gap: 6,
+                            }}>
+                                <p style={{ margin: 0, fontSize: 13, color: "#111827", lineHeight: 1.4 }}>{n.message}</p>
+                                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                                    <span style={{ fontSize: 11, color: "#9CA3AF" }}>
+                                        {new Date(n.createdAt).toLocaleString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                                    </span>
+                                    {!n.read && (
+                                        <button onClick={() => handleMarkRead(n.id)} className="btn-reset"
+                                            style={{ background: "none", border: "1px solid #BFDBFE", borderRadius: 6, padding: "2px 8px", fontSize: 11, color: "#2563EB", cursor: "pointer", fontWeight: 600 }}>
+                                            Mark as read
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
 
 const navItems = [
     { name: "Dashboard",        path: "/patient",                icon: LayoutDashboard },
@@ -331,14 +450,14 @@ const PatientDashboard = () => {
                             <p style={{ fontSize: 11, color: "#9CA3AF", margin: 0 }}>P{profile?.id || "----"}</p>
                         </div>
                     </div>
-                    <button onClick={handleLogout}
+                    <button onClick={handleLogout} className="btn-reset"
                         style={{
                             width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 7,
-                            background: "#DC2626", color: "#fff", border: "none",
-                            borderRadius: 8, padding: "8px 0", fontSize: 13, fontWeight: 600, cursor: "pointer", transition: "background 0.15s",
+                            background: "#FEF2F2", color: "#DC2626", border: "1px solid #FECACA",
+                            borderRadius: 8, padding: "8px 0", fontSize: 13, fontWeight: 600, cursor: "pointer", transition: "background 0.15s, border-color 0.15s",
                         }}
-                        onMouseEnter={e => e.currentTarget.style.background = "#B91C1C"}
-                        onMouseLeave={e => e.currentTarget.style.background = "#DC2626"}
+                        onMouseEnter={e => { e.currentTarget.style.background = "#FEE2E2"; e.currentTarget.style.borderColor = "#F87171"; }}
+                        onMouseLeave={e => { e.currentTarget.style.background = "#FEF2F2"; e.currentTarget.style.borderColor = "#FECACA"; }}
                     >
                         <LogOut size={15} />
                         Logout
@@ -370,9 +489,7 @@ const PatientDashboard = () => {
                         </div>
                     </div>
                     <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                        <button style={{ background: "none", border: "none", cursor: "pointer", color: "#6B7280", padding: 6, borderRadius: 8, display: "flex" }}>
-                            <Bell size={19} />
-                        </button>
+                        <NotificationBell />
                         <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
                             <img
                                 src={getProfilePictureFromLocal('patient') || "https://i.pravatar.cc/36?img=5"}
@@ -427,6 +544,10 @@ const PatientDashboard = () => {
                     .md-sidebar.open { transform: translateX(0); }
                     main { margin-left: 0 !important; }
                     .hamburger { display: flex !important; }
+                }
+                .btn-reset {
+                    background-color: transparent !important;
+                    background: none !important;
                 }
             `}</style>
         </div>

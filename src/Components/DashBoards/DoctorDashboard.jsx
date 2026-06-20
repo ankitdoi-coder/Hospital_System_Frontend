@@ -7,7 +7,7 @@ import { selectCompletedAppointments, selectPendingAppointments, selectScheduled
 
 import { removeToken, getUserEmail, setupAxiosInterceptors } from "../../Services/AuthService.js";
 // eslint-disable-next-line no-unused-vars
-import { getMyAppointments, updateAppointmentStatus, createPrescription, getMyPatients, getMyPrescriptions } from "../../Services/DoctorService.js";
+import { getMyAppointments, updateAppointmentStatus, createPrescription, getMyPatients, getMyPrescriptions, getDoctorProfile, getMyNotifications, getUnreadCount, markNotificationRead, markAllNotificationsRead } from "../../Services/DoctorService.js";
 import { getProfilePictureFromLocal } from "../../Services/ProfileService.js";
 import ProfileSettings from "../ProfileSettings.jsx";
 import logo from "../../assets/OnlyLogo.svg"
@@ -17,11 +17,132 @@ import completed from "../../assets/completed.svg"
 import pending from "../../assets/pending.svg"
 import today from "../../assets/today.svg"
 
+/* ─────────────────────────────────────────────
+   NOTIFICATION BELL
+───────────────────────────────────────────── */
+const NotificationBell = () => {
+    const [open, setOpen] = useState(false);
+    const [notifications, setNotifications] = useState([]);
+    const [unreadCount, setUnreadCount] = useState(0);
+    const [loadingNotifs, setLoadingNotifs] = useState(false);
+    const ref = React.useRef(null);
+
+    useEffect(() => {
+        const fetchCount = async () => {
+            try { const res = await getUnreadCount(); setUnreadCount(res.data); } catch {}
+        };
+        fetchCount();
+        window.addEventListener('focus', fetchCount);
+        return () => window.removeEventListener('focus', fetchCount);
+    }, []);
+
+    useEffect(() => {
+        const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+        document.addEventListener('mousedown', handler);
+        return () => document.removeEventListener('mousedown', handler);
+    }, []);
+
+    const handleOpen = async () => {
+        const next = !open;
+        setOpen(next);
+        if (next) {
+            try { const res = await getMyNotifications(); setNotifications(res.data); } catch {}
+        }
+    };
+
+    const handleMarkRead = async (id) => {
+        try {
+            await markNotificationRead(id);
+            setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+            setUnreadCount(c => Math.max(0, c - 1));
+        } catch {}
+    };
+
+    const handleMarkAll = async () => {
+        try {
+            await markAllNotificationsRead();
+            setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+            setUnreadCount(0);
+        } catch {}
+    };
+
+    return (
+        <div ref={ref} style={{ position: 'relative' }}>
+            <button onClick={handleOpen}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6B7280', padding: 6, borderRadius: 8, display: 'flex', position: 'relative', backgroundColor: 'transparent' }}
+                className="btn-reset-doc"
+            >
+                <svg width={20} height={20} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                </svg>
+                {unreadCount > 0 && (
+                    <span style={{
+                        position: 'absolute', top: 2, right: 2,
+                        background: '#DC2626', color: '#fff',
+                        fontSize: 10, fontWeight: 700,
+                        borderRadius: '50%', width: 16, height: 16,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    }}>{unreadCount > 99 ? '99+' : unreadCount}</span>
+                )}
+            </button>
+
+            {open && (
+                <div style={{
+                    position: 'absolute', right: 0, top: 'calc(100% + 8px)',
+                    width: 320, background: '#fff',
+                    border: '1px solid #E5E7EB', borderRadius: 10,
+                    boxShadow: '0 4px 20px rgba(0,0,0,0.12)',
+                    zIndex: 100, overflow: 'hidden',
+                }}>
+                    <div style={{ padding: '12px 16px', borderBottom: '1px solid #F3F4F6', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <span style={{ fontWeight: 700, fontSize: 14, color: '#111827' }}>Notifications</span>
+                        {notifications.some(n => !n.read) && (
+                            <button onClick={handleMarkAll} className="btn-reset-doc"
+                                style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: '#2563EB', fontWeight: 600, padding: 0, backgroundColor: 'transparent' }}>
+                                Mark all as read
+                            </button>
+                        )}
+                    </div>
+                    <div style={{ maxHeight: 340, overflowY: 'auto' }}>
+                        {loadingNotifs ? (
+                            <p style={{ textAlign: 'center', padding: '24px 0', color: '#9CA3AF', fontSize: 13 }}>Loading...</p>
+                        ) : notifications.length === 0 ? (
+                            <p style={{ textAlign: 'center', padding: '24px 0', color: '#9CA3AF', fontSize: 13 }}>No notifications</p>
+                        ) : notifications.map(n => (
+                            <div key={n.id} style={{
+                                padding: '12px 16px',
+                                borderBottom: '1px solid #F9FAFB',
+                                background: n.read ? '#fff' : '#EFF6FF',
+                                display: 'flex', flexDirection: 'column', gap: 6,
+                            }}>
+                                <p style={{ margin: 0, fontSize: 13, color: '#111827', lineHeight: 1.4 }}>{n.message}</p>
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                    <span style={{ fontSize: 11, color: '#9CA3AF' }}>
+                                        {new Date(n.createdAt).toLocaleString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                                    </span>
+                                    {!n.read && (
+                                        <button onClick={() => handleMarkRead(n.id)} className="btn-reset-doc"
+                                            style={{ background: 'none', border: '1px solid #BFDBFE', borderRadius: 6, padding: '2px 8px', fontSize: 11, color: '#2563EB', cursor: 'pointer', fontWeight: 600, backgroundColor: 'transparent' }}>
+                                            Mark as read
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
+
 const DoctorDashboard = () => {
     const navigate = useNavigate();
     const dispatch = useAppDispatch();
     const userEmail = getUserEmail();
-    
+    const [doctorProfile, setDoctorProfile] = useState(null);
+    const displayName = doctorProfile ? `${doctorProfile.firstName} ${doctorProfile.lastName}` : userEmail;
+
     const { list: appointments, loading, patients } = useAppSelector(state => state.appointments);
     const { list: prescriptions } = useAppSelector(state => state.prescriptions);
     
@@ -39,6 +160,7 @@ const DoctorDashboard = () => {
         setupAxiosInterceptors();
         fetchAppointments();
         fetchPrescriptions();
+        getDoctorProfile().then(res => setDoctorProfile(res.data)).catch((err) => console.error('getDoctorProfile failed:', err?.response?.status, err?.response?.data));
     }, []);
     
     useEffect(() => {
@@ -172,7 +294,7 @@ const DoctorDashboard = () => {
             Medication: ${prescription.medicationDetails}
             Dosage: ${prescription.dosages}
             
-            Doctor: Dr. ${userEmail}
+            Doctor: Dr. ${displayName}
         `;
         const printWindow = window.open('', '_blank');
         printWindow.document.write(`
@@ -240,6 +362,7 @@ const DoctorDashboard = () => {
         <>
             <style>{`
                 .doc-shell { display:flex; height:100vh; overflow:hidden; background:#F9FAFB; font-family:'Inter','Segoe UI',system-ui,sans-serif; }
+                .btn-reset-doc { background-color: transparent !important; background: none !important; }
                 /* ── Sidebar ── */
                 .doc-sidebar {
                     width: 240px;
@@ -357,15 +480,16 @@ const DoctorDashboard = () => {
                                 style={{ width: 38, height: 38, borderRadius: 9, objectFit: 'cover', border: '2px solid #E5E7EB', flexShrink: 0 }}
                             />
                             <div style={{ minWidth: 0 }}>
-                                <p style={{ fontSize: 13, fontWeight: 600, color: '#111827', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>Dr. {userEmail}</p>
+                                <p style={{ fontSize: 13, fontWeight: 600, color: '#111827', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>Dr. {displayName}</p>
                                 <p style={{ fontSize: 11, color: '#6B7280', margin: 0, fontWeight: 500 }}>Medical Doctor</p>
                             </div>
                         </div>
                         <button
                             onClick={handleLogout}
-                            style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, background: '#DC2626', color: '#fff', border: 'none', borderRadius: 8, padding: '9px 0', fontSize: 13, fontWeight: 600, cursor: 'pointer', transition: 'all 0.15s ease', boxShadow: '0 1px 2px rgba(220,38,38,0.15)' }}
-                            onMouseEnter={e => { e.currentTarget.style.background = '#B91C1C'; e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 2px 4px rgba(220,38,38,0.25)'; }}
-                            onMouseLeave={e => { e.currentTarget.style.background = '#DC2626'; e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 1px 2px rgba(220,38,38,0.15)'; }}
+                            style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, background: '#FEF2F2', color: '#DC2626', border: '1px solid #FECACA', borderRadius: 8, padding: '9px 0', fontSize: 13, fontWeight: 600, cursor: 'pointer', transition: 'all 0.15s ease' }}
+                            className="btn-reset-doc"
+                            onMouseEnter={e => { e.currentTarget.style.background = '#FEE2E2'; e.currentTarget.style.borderColor = '#F87171'; }}
+                            onMouseLeave={e => { e.currentTarget.style.background = '#FEF2F2'; e.currentTarget.style.borderColor = '#FECACA'; }}
                         >
                             <svg width={15} height={15} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -395,13 +519,16 @@ const DoctorDashboard = () => {
                                 </button>
                                 <div>
                                     <h1 className="text-2xl font-bold text-gray-900">Medical Dashboard</h1>
-                                    <p className="text-gray-600 text-sm mt-0.5">Welcome back, Dr. {userEmail}</p>
+                                    <p className="text-gray-600 text-sm mt-0.5">Welcome back, Dr. {displayName}</p>
                                 </div>
                             </div>
-                            <div className="bg-gray-50 px-4 py-2.5 rounded-lg border border-gray-200">
-                                <p className="text-sm font-medium text-gray-700">
-                                    {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-                                </p>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                                <NotificationBell />
+                                <div className="bg-gray-50 px-4 py-2.5 rounded-lg border border-gray-200">
+                                    <p className="text-sm font-medium text-gray-700">
+                                        {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                                    </p>
+                                </div>
                             </div>
                         </div>
                     </header>
@@ -790,7 +917,7 @@ const DoctorDashboard = () => {
                         ) : activeView === 'profile' ? (
                             <ProfileSettings 
                                 userType="doctor" 
-                                userProfile={{ email: userEmail }} 
+                                userProfile={{ email: userEmail, firstName: doctorProfile?.firstName, lastName: doctorProfile?.lastName }} 
                                 onProfileUpdate={async (updatedProfile) => {
                                     console.log('Updating doctor profile:', updatedProfile);
                                 }}
