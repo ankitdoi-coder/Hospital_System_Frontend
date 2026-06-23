@@ -10,6 +10,14 @@ export const RegisterUser = (registerData) =>
 export const LoginUser = (loginData) => 
     apiClient.post('/api/auth/login', loginData);
 
+// For Sending OTP
+export const sendOtp = (email) =>
+    apiClient.post('/api/auth/send-otp', { email });
+
+// For Verifying OTP
+export const verifyOtp = (email, otp) =>
+    apiClient.post('/api/auth/verify-otp', { email, otp });
+
 // For Forgot Password
 export const forgotPassword = (email) => 
     apiClient.post('/api/auth/forgot-password', { email });

@@ -255,7 +255,7 @@ const Login = () => {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full text-red bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300 font-bold rounded-lg text-md px-5 py-3 text-center transition duration-300 disabled:bg-blue-400 disabled:cursor-not-allowed"
+            className="w-full text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300 font-bold rounded-lg text-md px-5 py-3 text-center transition duration-300 disabled:bg-blue-400 disabled:cursor-not-allowed"
           >
             {isSubmitting ? 'Logging in...' : 'LOGIN'}
           </button>
