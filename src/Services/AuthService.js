@@ -22,6 +22,19 @@ export const verifyOtp = (email, otp) =>
 export const forgotPassword = (email) => 
     apiClient.post('/api/auth/forgot-password', { email });
 
+// Verify reset token with backend
+export const verifyResetToken = async (email, token) => {
+    try {
+        const response = await apiClient.post('/api/auth/verify-reset-token', { email, token });
+        return response.data;
+    } catch (error) {
+        return {
+            success: false,
+            message: error.response?.data?.message || 'Invalid token'
+        };
+    }
+};
+
 // For Reset Password
 export const resetPassword = (token, newPassword) => 
     apiClient.post('/api/auth/reset-password', { token, newPassword });
