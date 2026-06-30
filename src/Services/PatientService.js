@@ -18,6 +18,12 @@ export const getMyProfile = () => apiClient.get('/api/patient/profile');
 // Make payment
 export const makePayment = (appointmentId) => apiClient.put(`/api/patient/appointments/${appointmentId}/pay`);
 
+// Create Razorpay order for an appointment
+export const createRazorpayOrder = (appointmentId, amount, currency = 'INR') => apiClient.post('/api/payments/create-order', { appointmentId, amount, currency });
+
+// Verify Razorpay payment and mark appointment paid
+export const verifyRazorpayPayment = (payload) => apiClient.post('/api/payments/verify', payload);
+
 // Cancel appointment
 export const cancelAppointment = (appointmentId) => apiClient.delete(`/api/patient/appointments/${appointmentId}/cancel`);
 
