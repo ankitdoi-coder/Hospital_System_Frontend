@@ -1,35 +1,53 @@
+<div align="center">
+
 # 🏥 Smart Healthcare System — Frontend
 
-> A production-grade, full stack healthcare web application built with **React 19 + Vite** on the frontend and **Spring Boot 3 + Spring Security + MySQL** on the backend. Designed to demonstrate end-to-end Java Full Stack development capabilities — from JWT-secured REST APIs to a responsive, role-based React UI, including a real payment gateway integration.
+**A production-grade, full stack healthcare web application** built with **React 19 + Vite** on the frontend and **Spring Boot 3 + Spring Security + MySQL** on the backend.
+Designed to demonstrate end-to-end Java Full Stack development — from JWT-secured REST APIs to a responsive, role-based React UI.
 
-**🔗 Backend Repository:** [HealthCare-Backend](https://github.com/ankitdoi-coder/HealthCare-Backend) — Spring Boot 3 | Spring Security | JPA/Hibernate | MySQL | JWT | OAuth2 | Razorpay
+[![React](https://img.shields.io/badge/React-19.x-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
+[![Vite](https://img.shields.io/badge/Vite-7.x-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
+[![Redux Toolkit](https://img.shields.io/badge/Redux%20Toolkit-2.x-764ABC?style=for-the-badge&logo=redux&logoColor=white)](https://redux-toolkit.js.org/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-4.x-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.x-6DB33F?style=for-the-badge&logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
+[![MySQL](https://img.shields.io/badge/MySQL-8.x-4479A1?style=for-the-badge&logo=mysql&logoColor=white)](https://www.mysql.com/)
+[![JWT](https://img.shields.io/badge/Auth-JWT-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white)](https://jwt.io/)
+[![Razorpay](https://img.shields.io/badge/Payments-Razorpay-0C2451?style=for-the-badge&logo=razorpay&logoColor=white)](https://razorpay.com/)
+
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](#)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](#)
+[![Made with Java](https://img.shields.io/badge/Made%20with-Java%20Full%20Stack-orange.svg?style=flat-square)](#)
+
+**Backend Repository:** [🔗 HealthCare-Backend](https://github.com/ankitdoi-coder/HealthCare-Backend) — Spring Boot 3 | Spring Security | JPA/Hibernate | MySQL | JWT | OAuth2 | Razorpay
+
+</div>
 
 ---
 
-## 🧑‍💻 What This Project Demonstrates (Java Full Stack Perspective)
+## 🎯 What This Project Demonstrates (Java Full Stack Perspective)
 
 > As a Java Full Stack Developer, this project showcases ownership of the **entire vertical slice** — from database schema design to REST API development to a fully functional React UI, including third-party payment gateway integration done the right way.
 
 | Layer | Technology | What Was Built |
 |---|---|---|
-| **Backend** | Spring Boot 3 | RESTful APIs with full CRUD for Patients, Doctors, Appointments, Prescriptions, Billing |
-| **Security** | Spring Security + JWT | Stateless auth, role-based access control (PATIENT / DOCTOR / ADMIN) |
-| **OAuth2** | Google OAuth2 + Spring Security | Social login with token redirect handling on the frontend |
-| **Payments** | Razorpay Checkout + Server Verification | Real UPI/Card/Netbanking payments with HMAC signature verification before billing status changes |
-| **Database** | MySQL + JPA/Hibernate | Normalized relational schema, entity relationships, lazy loading |
-| **API Docs** | SpringDoc OpenAPI / Swagger UI | Self-documenting REST API at `/swagger-ui/index.html` |
-| **Frontend** | React 19 + Vite | Component-based SPA consuming all backend APIs |
-| **State** | Redux Toolkit | Centralized store: auth, appointments, doctors, patients, prescriptions |
-| **HTTP Layer** | Axios + Interceptors | Auto JWT injection, 401/403 handling, token refresh detection |
-| **Routing** | React Router v7 | Role-protected routes, redirect-after-login, 404/401 handling |
-| **Forms** | React Hook Form | Validated forms for login, register, appointments, prescriptions |
-| **UX** | Tailwind CSS v4 + Framer Motion | Responsive UI with smooth animations |
+| 🧩 **Backend** | Spring Boot 3 | RESTful APIs with full CRUD for Patients, Doctors, Appointments, Prescriptions, Billing |
+| 🔐 **Security** | Spring Security + JWT | Stateless auth, role-based access control (PATIENT / DOCTOR / ADMIN) |
+| 🌐 **OAuth2** | Google OAuth2 + Spring Security | Social login with token redirect handling on the frontend |
+| 💳 **Payments** | Razorpay Checkout + Server Verification | Real UPI/Card/Netbanking payments with HMAC signature verification before billing status changes |
+| 🗄️ **Database** | MySQL + JPA/Hibernate | Normalized relational schema, entity relationships, lazy loading |
+| 📚 **API Docs** | SpringDoc OpenAPI / Swagger UI | Self-documenting REST API at `/swagger-ui/index.html` |
+| 🎨 **Frontend** | React 19 + Vite | Component-based SPA consuming all backend APIs |
+| 🧠 **State** | Redux Toolkit | Centralized store: auth, appointments, doctors, patients, prescriptions |
+| 📡 **HTTP Layer** | Axios + Interceptors | Auto JWT injection, 401/403 handling, token refresh detection |
+| 🧭 **Routing** | React Router v7 | Role-protected routes, redirect-after-login, 404/401 handling |
+| 📝 **Forms** | React Hook Form | Validated forms for login, register, appointments, prescriptions |
+| ✨ **UX** | Tailwind CSS v4 + Framer Motion | Responsive UI with smooth animations |
 
 ---
 
 ## ✨ Features
 
-### 🔐 Authentication & Security
+### 🔑 Authentication & Security
 - **JWT-based stateless login** — credentials sent to `/api/auth/login`, token decoded client-side for role & expiry
 - **Google OAuth2 Social Login** — Spring Security OAuth2 flow with a dedicated `OAuth2RedirectHandler` on the frontend
 - **Forgot Password / Reset Password** — token-based email reset flow (`/api/auth/forgot-password`, `/api/auth/reset-password`)
@@ -39,12 +57,12 @@
 - **ProtectedRoute Component** — guards all dashboard routes; redirects unauthenticated users, blocks wrong roles
 
 ### 💳 Payment Integration (Razorpay)
-- **Real gateway checkout** — appointment billing is settled via the official Razorpay Checkout widget (UPI, Cards, Netbanking), not a mocked payment button
-- **Order-based flow** — frontend requests a Razorpay order from the backend (`createRazorpayOrder`) before checkout ever opens, so every payment is tied to a real, server-issued order ID
-- **Server-verified success** — on payment completion, the `razorpay_payment_id`, `razorpay_order_id`, and `razorpay_signature` are sent to `verifyRazorpayPayment`; the backend recomputes the HMAC signature and only then flips billing status to `PAID`. The client is never trusted to self-report a successful payment
-- **Graceful failure handling** — distinct UI states for payment success, payment failure, and checkout-dismissal (user closes the popup), instead of a single happy-path assumption
+- **Real gateway checkout** — appointment billing settled via the official Razorpay Checkout widget (UPI, Cards, Netbanking), not a mocked button
+- **Order-based flow** — frontend requests a Razorpay order from the backend (`createRazorpayOrder`) before checkout opens, so every payment is tied to a real server-issued order ID
+- **Server-verified success** — on payment completion, `razorpay_payment_id`, `razorpay_order_id`, and `razorpay_signature` are sent to `verifyRazorpayPayment`; the backend recomputes the HMAC signature and only then flips billing status to `PAID`
+- **Graceful failure handling** — distinct UI states for payment success, failure, and checkout-dismissal
 - **Live billing sync** — appointment rows update from `UNPAID` to `PAID` instantly via React state, no manual refresh required
-- **Test Mode validated** — full flow (order → checkout → OTP → signature verification) tested end-to-end against Razorpay's sandbox before going anywhere near a live key
+- **Test Mode validated** — full flow (order → checkout → OTP → signature verification) tested end-to-end against Razorpay's sandbox
 
 ### 🧑‍⚕️ Patient Portal
 - Dashboard with personal profile and upcoming appointment summary
@@ -56,24 +74,32 @@
 - Profile picture upload and profile settings management
 
 ### 👨‍⚕️ Doctor Portal
-- Dashboard showing today's appointment schedule
-- Access patient records for completed consultations
-- Create and issue prescriptions after consultations
+- **Live stats dashboard** — Total, Scheduled, Completed, Pending, and Today's appointment counts driven from Redux state via memoized selectors (`selectTodayAppointments`, `selectScheduledAppointments`, `selectCompletedAppointments`, `selectPendingAppointments`)
+- **Real-time appointment list** — `getMyAppointments()` fires on mount and dispatches to Redux; a manual **Refresh** button re-fetches live data from the backend without a page reload, with a loading spinner state
+- **Full appointment context per row** — each appointment displays patient name, date, **preferred time** (formatted to 12-hr from the `appointmentTime` field), and **reason for visit** (`reasonForVisit`) so the doctor has complete context before the consultation starts
+- **Appointment workflow actions** — Accept (PENDING → SCHEDULED), Complete (SCHEDULED → COMPLETED), Cancel; each action calls `updateAppointmentStatus` and dispatches `updateAppointment` to Redux for instant UI sync without a re-fetch
+- **Appointments Calendar view** — monthly calendar with green dot indicators on days that have appointments, with prev/next month navigation
+- **In-app Notification Bell** — fetches unread count on mount and on window `focus` event; dropdown shows all notifications with per-item mark-as-read and a mark-all-as-read action, backed by `getMyNotifications`, `markNotificationRead`, `markAllNotificationsRead`
+- **Patient records** — fetched via `getMyPatients()`; gracefully falls back to deriving unique patients from completed appointments already in Redux state if the API call fails
+- **Create prescriptions** — modal triggered from a completed appointment row; calls `createPrescription` and dispatches result to `prescriptionsSlice`
+- **Edit & Print prescriptions** — edit modal pre-fills existing medication data; print opens a formatted prescription slip in a new browser window
+- **Profile Settings** — inline profile management without leaving the dashboard
+- **Responsive sidebar** — collapses to a hamburger menu on mobile with an overlay backdrop
 
-### 🔧 Admin Portal
+### 🛠️ Admin Portal
 - View all registered doctors including those with pending approval
 - Approve new doctor registrations to grant system access
 - View and manage all registered patients
 - View billing records and daily/monthly revenue collected via Razorpay
 
-### 🌐 Public Landing Pages
+### 🌍 Public Landing Pages
 - Home, About Us, Services, Appointment Info, Contact Us
 - Responsive Navbar and Footer
 - Animated UI with Framer Motion
 
 ---
 
-## 🏛️ Architecture
+## 🏗️ Architecture
 
 ```
 src/
@@ -81,13 +107,13 @@ src/
 ├── Services/               # Service layer — one file per domain
 │   ├── AuthService.js      # JWT decode, token management, axios interceptors
 │   ├── PatientService.js   # Appointments, doctors, prescriptions, Razorpay order/verify calls
-│   ├── DoctorService.js    
-│   ├── AdminService.js     
-│   └── ProfileService.js   
+│   ├── DoctorService.js    # Appointments, patients, prescriptions, notifications
+│   ├── AdminService.js
+│   └── ProfileService.js
 ├── store/                  # Redux Toolkit store
 │   ├── slices/             # authSlice, appointmentsSlice, doctorsSlice, patientsSlice, prescriptionsSlice
 │   ├── thunks/             # Async thunks for API calls
-│   └── selectors/          # Memoized selectors
+│   └── selectors/          # Memoized selectors for derived state
 ├── Components/
 │   ├── DashBoards/         # PatientDashboard, DoctorDashboard, AdminDashboard, ProtectedRoute
 │   ├── Landing_Pages_Components/   # Home, Login, Register, ForgotPassword, ResetPassword, OAuth2RedirectHandler
@@ -96,15 +122,39 @@ src/
 ```
 
 **Key architectural decisions:**
-- **Service Layer Pattern** — mirrors the backend `@Service` layer; each domain has its own service file wrapping Axios calls, including the Razorpay order-creation and verification calls
+- **Service Layer Pattern** — mirrors the backend `@Service` layer; each domain has its own service file wrapping Axios calls, including Razorpay order-creation and verification
 - **Redux Slices** — separate slices per entity, matching backend entity structure (Appointment, Doctor, Patient, Prescription)
+- **Memoized Selectors** — `selectTodayAppointments`, `selectScheduledAppointments`, `selectCompletedAppointments`, `selectPendingAppointments` compute derived state without unnecessary re-renders
 - **Thunks for Async** — all API calls live in thunks, keeping components clean and testable
 - **ProtectedRoute HOC** — declarative route guarding with `allowedRoles` prop, mirrors Spring Security's `@PreAuthorize`
+- **Optimistic UI + graceful fallback** — patient list attempts a dedicated API call; on failure, derives the list from existing appointment data already in Redux state
 - **Client never owns payment truth** — the payment modal only ever reflects what the backend confirms after signature verification; no UI state change marks something "paid" on its own
 
 ---
 
-## 💻 Tech Stack
+## 🧰 Tech Stack
+
+<div align="center">
+
+![React](https://img.shields.io/badge/React-19.x-61DAFB?style=flat-square&logo=react&logoColor=black)
+![Vite](https://img.shields.io/badge/Vite-7.x-646CFF?style=flat-square&logo=vite&logoColor=white)
+![React Router](https://img.shields.io/badge/React%20Router-7.x-CA4245?style=flat-square&logo=reactrouter&logoColor=white)
+![Redux Toolkit](https://img.shields.io/badge/Redux%20Toolkit-2.x-764ABC?style=flat-square&logo=redux&logoColor=white)
+![Axios](https://img.shields.io/badge/Axios-1.x-5A29E4?style=flat-square&logo=axios&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-4.x-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white)
+![Framer Motion](https://img.shields.io/badge/Framer%20Motion-12.x-0055FF?style=flat-square&logo=framer&logoColor=white)
+![React Hook Form](https://img.shields.io/badge/React%20Hook%20Form-7.x-EC5990?style=flat-square&logo=reacthookform&logoColor=white)
+![Razorpay](https://img.shields.io/badge/Razorpay-Checkout.js-0C2451?style=flat-square&logo=razorpay&logoColor=white)
+![Lucide](https://img.shields.io/badge/Icons-Lucide%20React-F56565?style=flat-square&logo=lucide&logoColor=white)
+
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.x-6DB33F?style=flat-square&logo=springboot&logoColor=white)
+![Spring Security](https://img.shields.io/badge/Spring%20Security-JWT-6DB33F?style=flat-square&logo=springsecurity&logoColor=white)
+![OAuth2](https://img.shields.io/badge/OAuth2-Google-4285F4?style=flat-square&logo=google&logoColor=white)
+![Hibernate](https://img.shields.io/badge/ORM-JPA%2FHibernate-59666C?style=flat-square&logo=hibernate&logoColor=white)
+![MySQL](https://img.shields.io/badge/MySQL-8.x-4479A1?style=flat-square&logo=mysql&logoColor=white)
+![Swagger](https://img.shields.io/badge/API%20Docs-Swagger%2FOpenAPI-85EA2D?style=flat-square&logo=swagger&logoColor=black)
+
+</div>
 
 | | Technology | Version |
 |---|---|---|
@@ -128,7 +178,7 @@ src/
 
 ---
 
-## 🔑 Security Implementation
+## 🔒 Security Implementation
 
 ```
 Client                          Server
@@ -151,7 +201,7 @@ Client                          Server
 
 ---
 
-## 💳 Payment Flow (Razorpay)
+## 💰 Payment Flow (Razorpay)
 
 ```
 Patient                Frontend                Backend                 Razorpay
@@ -161,22 +211,17 @@ Patient                Frontend                Backend                 Razorpay
    │                      │                       │── Create Order API ──►│
    │                      │                       │◄── order_id ──────────│
    │                      │◄── order_id, key ─────│                       │
-   │                      │                                               │
    │                      │── rzp.open() ─────────────────────────────────►│
    │◄─────────────── Checkout UI (UPI / Card / Netbanking) ────────────────│
    │── Completes payment ────────────────────────────────────────────────►│
    │                      │◄── payment_id, order_id, signature ───────────│
-   │                      │                       │                       │
    │                      │── verifyRazorpayPayment►│                      │
-   │                      │                       │── Recompute HMAC ────│
-   │                      │                       │   signature match?   │
+   │                      │                       │── Recompute HMAC      │
    │                      │◄── billingStatus: PAID │                       │
    │◄── UI updates instantly (no refresh) ────────│                       │
 ```
 
-This was deliberately built around the same trust boundary real payment systems use: **the frontend triggers and displays the flow, but only the backend's signature check decides what counts as paid.**
-
-See the [backend repository](https://github.com/ankitdoi-coder/HealthCare-Backend) for the server-side verification implementation and test-mode credentials used to validate this flow end-to-end (test cards, test UPI ID, and OTP flow).
+> 🔐 The frontend triggers and displays the flow, but only the backend's signature check decides what counts as paid.
 
 ---
 
@@ -192,25 +237,25 @@ The backend uses a normalized relational schema with JPA entity relationships.
 
 | Page | Preview |
 |---|---|
-| Home | ![Home](./ScreenShots/Home.jpg) |
-| Login | ![Login](./ScreenShots/Login.jpg) |
-| Register | ![Register](./ScreenShots/Register.jpg) |
-| Appointment | ![Appointment](./ScreenShots/Appointment.jpg) |
-| About Us | ![About](./ScreenShots/AboutUs.jpg) |
-| Services | ![Services](./ScreenShots/Services.jpg) |
+| 🏠 Home | ![Home](./ScreenShots/Home.jpg) |
+| 🔑 Login | ![Login](./ScreenShots/Login.jpg) |
+| 📝 Register | ![Register](./ScreenShots/Register.jpg) |
+| 📅 Appointment | ![Appointment](./ScreenShots/Appointment.jpg) |
+| ℹ️ About Us | ![About](./ScreenShots/AboutUs.jpg) |
+| 🩺 Services | ![Services](./ScreenShots/Services.jpg) |
 
 ---
 
 ## 🚀 Getting Started
 
-### Prerequisites
+### ✅ Prerequisites
 - Node.js v18+
 - Java JDK 17+
 - Maven 3.x
 - MySQL 8.x
-- A Razorpay account (Test Mode keys are free, no business verification needed to start testing)
+- A Razorpay account (Test Mode keys are free)
 
-### 1. Start the Backend
+### 1️⃣ Start the Backend
 
 ```bash
 git clone https://github.com/ankitdoi-coder/HealthCare-Backend.git
@@ -221,7 +266,7 @@ mvn spring-boot:run
 # Swagger UI: http://localhost:8080/swagger-ui/index.html
 ```
 
-### 2. Start the Frontend
+### 2️⃣ Start the Frontend
 
 ```bash
 git clone https://github.com/ankitdoi-coder/HealthCare-Frontend.git
@@ -231,7 +276,7 @@ npm run dev
 # Runs at http://localhost:5173
 ```
 
-### 3. Environment Variables
+### 3️⃣ Environment Variables
 
 Create `.env.local` if your backend runs on a different URL:
 
@@ -239,25 +284,19 @@ Create `.env.local` if your backend runs on a different URL:
 VITE_API_BASE_URL=http://localhost:8080
 ```
 
-> Razorpay's public **Key ID** is returned to the frontend by the backend's order-creation response — it does not need to be stored separately in the frontend `.env`. The **Key Secret** lives only on the backend and is never exposed to the client.
+> 💡 Razorpay's public Key ID is returned by the backend's order-creation response — it does not need to be stored in the frontend `.env`. The Key Secret lives only on the backend and is never exposed to the client.
 
-### 4. Testing Payments
-
-Once both servers are running, book an appointment and click **Pay Now** on it. In Razorpay's sandbox checkout, use:
+### 4️⃣ Testing Payments
 
 | Method | Test Value |
 |---|---|
-| Card Number | `4111 1111 1111 1111` (any future expiry, any CVV) |
-| UPI ID | `success@razorpay` |
-| OTP | Any 4–10 digit number, e.g. `1234` |
-
-No real money moves in Test Mode — see the backend README for the full payment testing walkthrough.
+| 💳 Card Number | `4111 1111 1111 1111` (any future expiry, any CVV) |
+| 📱 UPI ID | `success@razorpay` |
+| 🔢 OTP | Any 4-10 digit number, e.g. `1234` |
 
 ---
 
-## 📖 API Documentation
-
-All backend endpoints are documented and explorable via Swagger UI:
+## 📚 API Documentation
 
 ```
 http://localhost:8080/swagger-ui/index.html
@@ -267,9 +306,9 @@ Covers: Auth, Patient, Doctor, Admin, Appointment, Prescription, and Payment end
 
 ---
 
-## 🗂️ Wireframes & Design
+## 🎨 Wireframes & Design
 
-The UI was designed before development using Figma wireframes available in `WireFrames & Figma UI's/`:
+Figma wireframes available in `WireFrames & Figma UI's/`:
 
 - Login & Register flows
 - Patient, Doctor, Admin panel layouts
@@ -277,12 +316,14 @@ The UI was designed before development using Figma wireframes available in `Wire
 
 ---
 
-## 👨‍💻 Author
+## 👤 Author
 
 **Ankit** — Java Full Stack Developer
+
+[![GitHub](https://img.shields.io/badge/GitHub-ankitdoi--coder-181717?style=flat-square&logo=github&logoColor=white)](https://github.com/ankitdoi-coder)
 
 - Built and owned the complete stack: Spring Boot backend + React frontend
 - Implemented end-to-end features: JWT auth, OAuth2 Google login, role-based access, full CRUD APIs, relational DB schema, and a verified Razorpay payment integration
 - Followed industry patterns: Service Layer, Repository Pattern, Redux Thunks, Protected Routes, Axios Interceptors, server-side payment trust boundaries
 
-> 📬 Open to Java Full Stack / Backend / Frontend opportunities. Feel free to connect!
+> 💼 Open to Java Full Stack / Backend / Frontend opportunities. Feel free to connect!
