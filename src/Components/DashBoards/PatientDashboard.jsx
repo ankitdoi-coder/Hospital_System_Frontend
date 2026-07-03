@@ -28,7 +28,7 @@ const NotificationBell = () => {
     // fetch count on mount + whenever user focuses the tab
     useEffect(() => {
         const fetchCount = async () => {
-            try { const res = await getUnreadCount(); setUnreadCount(res.data); } catch {}
+            try { const res = await getUnreadCount(); setUnreadCount(res.data); } catch { }
         };
         fetchCount();
         window.addEventListener("focus", fetchCount);
@@ -47,7 +47,7 @@ const NotificationBell = () => {
         const next = !open;
         setOpen(next);
         if (next) {
-            try { const res = await getMyNotifications(); setNotifications(res.data); } catch {}
+            try { const res = await getMyNotifications(); setNotifications(res.data); } catch { }
         }
     };
 
@@ -56,7 +56,7 @@ const NotificationBell = () => {
             await markNotificationRead(id);
             setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
             setUnreadCount(c => Math.max(0, c - 1));
-        } catch {}
+        } catch { }
     };
 
     const handleMarkAll = async () => {
@@ -64,7 +64,7 @@ const NotificationBell = () => {
             await markAllNotificationsRead();
             setNotifications(prev => prev.map(n => ({ ...n, read: true })));
             setUnreadCount(0);
-        } catch {}
+        } catch { }
     };
 
     return (
@@ -136,12 +136,12 @@ const NotificationBell = () => {
 };
 
 const navItems = [
-    { name: "Dashboard",        path: "/patient",                icon: LayoutDashboard },
-    { name: "Find Doctors",     path: "/patient/doctors",        icon: Users },
-    { name: "Book Appointment", path: "/patient/new-appointment",icon: CalendarPlus },
-    { name: "My Appointments",  path: "/patient/appointments",   icon: CalendarCheck },
-    { name: "Prescriptions",    path: "/patient/medicine",       icon: FileText },
-    { name: "Profile Settings", path: "/patient/profile",        icon: Settings },
+    { name: "Dashboard", path: "/patient", icon: LayoutDashboard },
+    { name: "Find Doctors", path: "/patient/doctors", icon: Users },
+    { name: "Book Appointment", path: "/patient/new-appointment", icon: CalendarPlus },
+    { name: "My Appointments", path: "/patient/appointments", icon: CalendarCheck },
+    { name: "Prescriptions", path: "/patient/medicine", icon: FileText },
+    { name: "Profile Settings", path: "/patient/profile", icon: Settings },
 ];
 
 /* ─────────────────────────────────────────────
@@ -160,7 +160,7 @@ const DashboardHome = () => {
     const stats = [
         {
             label: "Next Appointment",
-            value: next ? new Date(next.appointmentDate).toLocaleDateString('en-IN',{day:'2-digit',month:'short'}) : "None",
+            value: next ? new Date(next.appointmentDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' }) : "None",
             sub: next ? `Dr. ${next.doctorFirstName} ${next.doctorLastName}` : "No upcoming",
             color: "#2563EB",
             bg: "#EFF6FF",
@@ -185,10 +185,10 @@ const DashboardHome = () => {
     ];
 
     const quickActions = [
-        { label: "Find Doctors",     sub: "Browse specialists",  path: "/patient/doctors",         color: "#2563EB", Icon: Users },
-        { label: "Book Appointment", sub: "Schedule a visit",    path: "/patient/new-appointment",  color: "#059669", Icon: CalendarPlus },
-        { label: "Prescriptions",    sub: "View medications",    path: "/patient/medicine",          color: "#7C3AED", Icon: FileText },
-        { label: "Profile Settings", sub: "Manage your account", path: "/patient/profile",           color: "#D97706", Icon: Settings },
+        { label: "Find Doctors", sub: "Browse specialists", path: "/patient/doctors", color: "#2563EB", Icon: Users },
+        { label: "Book Appointment", sub: "Schedule a visit", path: "/patient/new-appointment", color: "#059669", Icon: CalendarPlus },
+        { label: "Prescriptions", sub: "View medications", path: "/patient/medicine", color: "#7C3AED", Icon: FileText },
+        { label: "Profile Settings", sub: "Manage your account", path: "/patient/profile", color: "#D97706", Icon: Settings },
     ];
 
     const displayName = profile
@@ -301,14 +301,197 @@ const PrescriptionsPage = ({ prescriptions, patientProfile, userEmail }) => (
                         ))}
                     </div>
                     <div style={{ display: "flex", gap: 10 }}>
-                        <button onClick={() => alert('Payment Successful! ✅')}
-                            style={{ background: "#059669", color: "#fff", border: "none", borderRadius: 8, padding: "8px 16px", fontSize: 13, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
-                            Pay Now
-                        </button>
                         <button onClick={() => {
                             const w = window.open('', '_blank');
-                            w.document.write(`<html><body style="font-family:Arial;padding:32px"><h2>Prescription Report</h2><p><b>Patient:</b> ${patientProfile ? `${patientProfile.firstName} ${patientProfile.lastName}` : userEmail}</p><p><b>Prescription:</b> #${rx.id}</p><p><b>Medication:</b> ${rx.medicationDetails}</p><p><b>Dosage:</b> ${rx.dosages}</p></body></html>`);
-                            w.document.close(); w.print();
+                            const patientName = patientProfile ? `${patientProfile.firstName} ${patientProfile.lastName}` : userEmail;
+                            const doctorName = (rx.doctorFirstName && rx.doctorLastName) ? `Dr. ${rx.doctorFirstName} ${rx.doctorLastName}` : 'Attending Physician';
+                            const issueDate = rx.createdAt ? new Date(rx.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' }) : new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' });
+                            const medications = rx.medicationDetails.split(',').map(m => m.trim()).filter(Boolean);
+                            const dosages = rx.dosages.split(',').map(d => d.trim()).filter(Boolean);
+
+                            w.document.write(`
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Prescription #${rx.id}</title>
+    <style>
+        /* CSS Reset & Base */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif; 
+            background: #e2e8f0; 
+            display: flex; 
+            justify-content: center; 
+            padding: 40px 20px; 
+            color: #0f172a;
+        }
+        
+        /* The Canvas */
+        .slip { 
+            background: #fff; 
+            width: 210mm; /* Standard A4 width */
+            min-height: 297mm; /* Standard A4 height */
+            padding: 40px 50px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1); 
+            position: relative;
+        }
+
+        /* Header / Letterhead */
+        .header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: flex-start; 
+            border-bottom: 2px solid #0f172a;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .clinic-brand h1 { font-size: 24px; font-weight: 800; letter-spacing: -0.5px; color: #0f172a; }
+        .clinic-brand p { font-size: 12px; color: #64748b; margin-top: 4px; text-transform: uppercase; letter-spacing: 1px; }
+        .meta-info { text-align: right; }
+        .meta-info p { font-size: 13px; color: #475569; line-height: 1.6; }
+        .meta-info strong { color: #0f172a; }
+
+        /* Doctor Info */
+        .doctor-info { margin-bottom: 30px; }
+        .doctor-info h2 { font-size: 18px; font-weight: 700; color: #0f172a; }
+        .doctor-info p { font-size: 13px; color: #64748b; font-weight: 500; }
+
+        /* Rx Badge */
+        .rx-symbol { 
+            font-size: 42px; 
+            font-weight: 700; 
+            font-family: serif; 
+            color: #0f172a; 
+            margin-bottom: 20px;
+            line-height: 1;
+        }
+
+        /* Patient Grid */
+        .patient-grid { 
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 40px;
+        }
+        .data-group label { display: block; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; font-weight: 600; margin-bottom: 4px; }
+        .data-group p { font-size: 14px; font-weight: 600; color: #0f172a; }
+
+        /* Medication Table */
+        .med-section h3 { font-size: 14px; text-transform: uppercase; letter-spacing: 1px; color: #64748b; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px; margin-bottom: 15px; }
+        .med-table { width: 100%; border-collapse: collapse; margin-bottom: 40px; }
+        .med-table th { font-size: 11px; text-transform: uppercase; color: #64748b; text-align: left; padding: 12px 8px; border-bottom: 2px solid #cbd5e1; }
+        .med-table td { padding: 16px 8px; font-size: 14px; color: #0f172a; border-bottom: 1px solid #e2e8f0; vertical-align: top; }
+        .med-table td:first-child { font-weight: 600; color: #64748b; width: 40px; }
+        .med-name { font-weight: 700; display: block; margin-bottom: 4px; }
+
+        /* Footer & Signatures */
+        .footer { 
+            margin-top: auto;
+            padding-top: 60px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: flex-end; 
+        }
+        .instructions { max-width: 60%; font-size: 11px; color: #64748b; line-height: 1.5; border-left: 3px solid #cbd5e1; padding-left: 12px; }
+        .signature-block { text-align: center; width: 220px; }
+        .signature-line { border-bottom: 1px solid #0f172a; margin-bottom: 8px; height: 40px; }
+        .signature-block p { font-size: 12px; font-weight: 600; color: #0f172a; }
+        .signature-block span { font-size: 10px; color: #64748b; }
+
+        /* Print Specifics */
+        @media print { 
+            body { background: #fff; padding: 0; } 
+            .slip { box-shadow: none; width: 100%; min-height: auto; padding: 0; } 
+            @page { margin: 15mm; } /* Lets the browser handle the hardware margins */
+        }
+    </style>
+</head>
+<body>
+    <div class='slip'>
+        
+        <div class='header'>
+            <div class='clinic-brand'>
+                <h1>HealthCare Center</h1>
+                <p>Advanced Medical Services</p>
+            </div>
+            <div class='meta-info'>
+                <p><strong>Record No:</strong> #${rx.id}</p>
+                <p><strong>Date:</strong> ${issueDate}</p>
+            </div>
+        </div>
+
+        <div class='doctor-info'>
+            <h2>${doctorName}</h2>
+            <p>MBBS, MD - General Medicine</p>
+        </div>
+
+        <div class='patient-grid'>
+            <div class='data-group'>
+                <label>Patient Name</label>
+                <p>${patientName}</p>
+            </div>
+            <div class='data-group'>
+                <label>Patient ID</label>
+                <p>P-${rx.patientId || 'N/A'}</p>
+            </div>
+            <div class='data-group'>
+                <label>Appointment Ref</label>
+                <p>#${rx.appointmentId}</p>
+            </div>
+            <div class='data-group'>
+                <label>Valid Until</label>
+                <p>30 Days from Issue</p>
+            </div>
+        </div>
+
+        <div class='rx-symbol'>&#8478;</div>
+
+        <div class='med-section'>
+            <h3>Prescription Details</h3>
+            <table class='med-table'>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Medication</th>
+                        <th>Dosage & Instructions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${medications.map((med, idx) => `
+                    <tr>
+                        <td>0${idx + 1}</td>
+                        <td><span class="med-name">${med}</span></td>
+                        <td>${dosages[idx] || dosages[0] || 'Take as directed by physician'}</td>
+                    </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        </div>
+
+        <div class='footer'>
+            <div class='instructions'>
+                <strong>Important:</strong> Substitute with generic equivalents if required, unless specified otherwise. Keep all medicines out of reach of children.
+            </div>
+            <div class='signature-block'>
+                <div class='signature-line'></div>
+                <p>${doctorName}</p>
+                <span>Authorized Signature & Stamp</span>
+            </div>
+        </div>
+
+    </div>
+    <script>
+        // Slight delay ensures styles map correctly before triggering print dialog
+        window.onload = () => setTimeout(() => window.print(), 150);
+    </script>
+</body>
+</html>
+`);
+                            w.document.close();
                         }}
                             style={{ background: "#fff", color: "#2563EB", border: "1px solid #BFDBFE", borderRadius: 8, padding: "8px 16px", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
                             Print
@@ -330,16 +513,16 @@ const PrescriptionsPage = ({ prescriptions, patientProfile, userEmail }) => (
    PATIENT DASHBOARD (main shell)
 ───────────────────────────────────────────── */
 const PatientDashboard = () => {
-    const navigate  = useNavigate();
-    const location  = useLocation();
-    const dispatch  = useAppDispatch();
+    const navigate = useNavigate();
+    const location = useLocation();
+    const dispatch = useAppDispatch();
     const userEmail = getUserEmail();
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [error, setError] = useState(null);
 
-    const { loading }                    = useAppSelector(s => s.appointments);
-    const { list: prescriptions }        = useAppSelector(s => s.prescriptions);
-    const { currentPatient: profile }    = useAppSelector(s => s.patients);
+    const { loading } = useAppSelector(s => s.appointments);
+    const { list: prescriptions } = useAppSelector(s => s.prescriptions);
+    const { currentPatient: profile } = useAppSelector(s => s.patients);
 
     const handleLogout = useCallback(() => { removeToken(); navigate("/login"); }, [navigate]);
 
@@ -370,7 +553,7 @@ const PatientDashboard = () => {
     }, [dispatch, handleLogout]);
 
     const displayName = profile ? `${profile.firstName} ${profile.lastName}` : userEmail || "Patient";
-    const activePath  = location.pathname === "/patient" ? "/patient" : navItems.find(n => location.pathname.startsWith(n.path) && n.path !== "/patient")?.path ?? "/patient";
+    const activePath = location.pathname === "/patient" ? "/patient" : navItems.find(n => location.pathname.startsWith(n.path) && n.path !== "/patient")?.path ?? "/patient";
 
     /* ── Page title map ── */
     const pageTitle = navItems.find(n => n.path === activePath)?.name ?? "Dashboard";
@@ -514,17 +697,17 @@ const PatientDashboard = () => {
                                     ? <div style={{ textAlign: "center", padding: 60, color: "#DC2626" }}>{error}</div>
                                     : <DashboardHome />
                         } />
-                        <Route path="doctors"         element={<DoctorsList />} />
+                        <Route path="doctors" element={<DoctorsList />} />
                         <Route path="new-appointment" element={<NewAppointment />} />
-                        <Route path="appointments"    element={<AppointmentHistory />} />
-                        <Route path="medicine"        element={
+                        <Route path="appointments" element={<AppointmentHistory />} />
+                        <Route path="medicine" element={
                             <PrescriptionsPage
                                 prescriptions={prescriptions}
                                 patientProfile={profile}
                                 userEmail={userEmail}
                             />
                         } />
-                        <Route path="profile"         element={
+                        <Route path="profile" element={
                             <ProfileSettings
                                 userType="patient"
                                 userProfile={profile}

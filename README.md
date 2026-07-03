@@ -70,7 +70,8 @@ Designed to demonstrate end-to-end Java Full Stack development — from JWT-secu
 - Book new appointments from available time slots
 - View full appointment history with status (SCHEDULED / COMPLETED / CANCELLED) and payment status (PAID / UNPAID)
 - Pay for appointments directly from the appointment history table via Razorpay
-- Access prescriptions linked to completed appointments
+- Access prescriptions linked to completed appointments — each prescription shows medication details and dosage instructions
+- **Professional prescription print / download** — Print button opens a styled A4 prescription slip in a new tab with clinic letterhead, doctor name, patient info, Rx symbol, medication table, and signature block; the browser print dialog opens automatically so the patient can print or save as PDF instantly
 - Profile picture upload and profile settings management
 
 ### 👨‍⚕️ Doctor Portal
@@ -82,7 +83,8 @@ Designed to demonstrate end-to-end Java Full Stack development — from JWT-secu
 - **In-app Notification Bell** — fetches unread count on mount and on window `focus` event; dropdown shows all notifications with per-item mark-as-read and a mark-all-as-read action, backed by `getMyNotifications`, `markNotificationRead`, `markAllNotificationsRead`
 - **Patient records** — fetched via `getMyPatients()`; gracefully falls back to deriving unique patients from completed appointments already in Redux state if the API call fails
 - **Create prescriptions** — modal triggered from a completed appointment row; calls `createPrescription` and dispatches result to `prescriptionsSlice`
-- **Edit & Print prescriptions** — edit modal pre-fills existing medication data; print opens a formatted prescription slip in a new browser window
+- **Professional prescription print** — Print button generates a fully styled A4 prescription slip in a new browser window with clinic letterhead, doctor name, patient info grid, Rx symbol, medication table (each drug on its own row), dosage instructions, and a signature/stamp block — auto-triggers the browser print dialog on open
+- **Edit prescriptions** — edit modal pre-fills existing medication and dosage data
 - **Profile Settings** — inline profile management without leaving the dashboard
 - **Responsive sidebar** — collapses to a hamburger menu on mobile with an overlay backdrop
 
