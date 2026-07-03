@@ -635,6 +635,8 @@ const DoctorDashboard = () => {
                                             <tr>
                                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Patient</th>
                                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Time</th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Reason</th>
                                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
                                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
                                             </tr>
@@ -644,18 +646,29 @@ const DoctorDashboard = () => {
                                                 <tr key={appointment.id} className="hover:bg-gray-50">
                                                     <td className="px-6 py-4">
                                                         <div className="flex items-center">
-                                                            <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
-                                                                <svg className="w-5 h-5 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
-                                                                    <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
-                                                                </svg>
+                                                            <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                                                                <span className="text-white font-semibold text-sm">
+                                                                    {(appointment.patientFirstName?.[0] || '') + (appointment.patientLastName?.[0] || '')}
+                                                                </span>
                                                             </div>
                                                             <div className="ml-3">
-                                                                <p className="text-sm font-medium text-gray-900">Patient #{appointment.patientId}</p>
+                                                                <p className="text-sm font-medium text-gray-900">{appointment.patientFirstName} {appointment.patientLastName}</p>
+                                                                <p className="text-xs text-gray-400">ID: {appointment.patientId}</p>
                                                             </div>
                                                         </div>
                                                     </td>
                                                     <td className="px-6 py-4 text-sm text-gray-900">
                                                         {new Date(appointment.appointmentDate).toLocaleDateString()}
+                                                    </td>
+                                                    <td className="px-6 py-4 text-sm text-gray-900">
+                                                        {appointment.appointmentTime
+                                                            ? new Date(`1970-01-01T${appointment.appointmentTime}`).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })
+                                                            : <span className="text-gray-400">—</span>}
+                                                    </td>
+                                                    <td className="px-6 py-4 text-sm text-gray-600 max-w-[160px]">
+                                                        <span title={appointment.reasonForVisit} className="block truncate">
+                                                            {appointment.reasonForVisit || <span className="text-gray-400">—</span>}
+                                                        </span>
                                                     </td>
                                                     <td className="px-6 py-4">
                                                         <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${

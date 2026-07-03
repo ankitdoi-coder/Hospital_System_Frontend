@@ -38,13 +38,11 @@ const NewAppointment = () => {
         setLoading(true);
 
         try {
-            const appointmentDateTime = appointmentDate && appointmentTime
-                ? `${appointmentDate}T${appointmentTime}`
-                : appointmentDate;
-
             const appointmentData = {
                 doctorId: parseInt(selectedDoctor),
-                appointmentDate: appointmentDateTime
+                appointmentDate: appointmentDate,
+                appointmentTime: appointmentTime ? `${appointmentTime}:00` : null,
+                reasonForVisit: reason || null
             };
 
             await bookAppointment(appointmentData);
