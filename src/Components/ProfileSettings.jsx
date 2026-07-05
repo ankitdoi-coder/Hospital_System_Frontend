@@ -1,12 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Save, User, Mail, Phone, MapPin, Calendar } from 'lucide-react';
 import ProfilePictureUpload from './ProfilePictureUpload';
-import { 
-    uploadProfilePicture, 
-    getProfilePictureUrl, 
-    saveProfilePictureToLocal, 
-    getProfilePictureFromLocal 
-} from '../Services/ProfileService';
+import { uploadProfilePicture } from '../Services/ProfileService';
 
 const ProfileSettings = ({ userType = 'patient', userProfile, onProfileUpdate }) => {
     const [profileData, setProfileData] = useState({
@@ -18,33 +13,18 @@ const ProfileSettings = ({ userType = 'patient', userProfile, onProfileUpdate })
         dateOfBirth: '',
         ...userProfile
     });
-    
+
     const [profilePicture, setProfilePicture] = useState(null);
     const [profilePictureFile, setProfilePictureFile] = useState(null);
     const [isUploading, setIsUploading] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
 
     useEffect(() => {
-        // Load profile picture from local storage or API
-        const loadProfilePicture = async () => {
-            const localImage = getProfilePictureFromLocal(userType);
-            if (localImage) {
-                setProfilePicture(localImage);
-            } else {
-                try {
-                    const imageUrl = await getProfilePictureUrl(userType);
-                    if (imageUrl) {
-                        setProfilePicture(imageUrl);
-                        saveProfilePictureToLocal(imageUrl, userType);
-                    }
-                } catch (error) {
-                    console.error('Error loading profile picture:', error);
-                }
-            }
-        };
-
-        loadProfilePicture();
-    }, [userType]);
+        const imageUrl = userProfile?.profilePicture || userProfile?.profilepicture || userProfile?.imageUrl;
+        if (imageUrl) {
+            setProfilePicture(imageUrl);
+        }
+    }, [userProfile]);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -66,13 +46,16 @@ const ProfileSettings = ({ userType = 'patient', userProfile, onProfileUpdate })
 
         setIsUploading(true);
         try {
-            const response = await uploadProfilePicture(profilePictureFile, userType);
-            const imageUrl = response.imageUrl || response.url;
-            
-            setProfilePicture(imageUrl);
-            saveProfilePictureToLocal(imageUrl, userType);
+            const imageUrl = await uploadProfilePicture(profilePictureFile, userType);
+
+            setProfilePicture(imageUrl || profilePicture);
             setProfilePictureFile(null);
-            
+
+            // 🔽 NEW: push the updated picture up to the parent so Redux state stays in sync
+            if (onProfileUpdate) {
+                await onProfileUpdate({ profilePicture: imageUrl });
+            }
+
             alert('Profile picture uploaded successfully!');
         } catch (error) {
             console.error('Error uploading profile picture:', error);
@@ -129,7 +112,7 @@ const ProfileSettings = ({ userType = 'patient', userProfile, onProfileUpdate })
                         {/* Profile Information Section */}
                         <div className="lg:col-span-2">
                             <h3 className="text-lg font-semibold text-gray-900 mb-6">Personal Information</h3>
-                            
+
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {/* First Name */}
                                 <div>

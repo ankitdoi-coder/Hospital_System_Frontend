@@ -212,7 +212,7 @@ const DashboardHome = () => {
                     <p style={{ color: "#93C5FD", fontSize: 13 }}>Patient ID: P{profile?.id || "----"}</p>
                 </div>
                 <img
-                    src={getProfilePictureFromLocal('patient') || "defaultpfp"}
+                    src={profile?.profilePicture || defaultpfp}
                     alt="avatar"
                     style={{ width: 72, height: 72, borderRadius: 10, objectFit: "cover", border: "3px solid rgba(255,255,255,0.3)", boxShadow: "0 4px 12px rgba(0,0,0,0.2)" }}
                 />
@@ -535,6 +535,7 @@ const PatientDashboard = () => {
                     getMyPrescriptions().catch(() => ({ data: [] })),
                     getMyProfile().catch(() => ({ data: null })),
                 ]);
+                // console.log("Profile data:", prof.data); // 🔍 add this
                 dispatch(setAppointments(apt.data || []));
                 dispatch(setPrescriptions(rx.data || []));
                 dispatch(setCurrentPatient(prof.data));
@@ -624,7 +625,7 @@ const PatientDashboard = () => {
                 <div style={{ padding: "14px 16px", borderTop: "1px solid #F3F4F6" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
                         <img
-                            src={getProfilePictureFromLocal('patient') || "https://i.pravatar.cc/40?img=5"}
+                            src={profile?.profilePicture || defaultpfp}
                             alt="avatar"
                             style={{ width: 36, height: 36, borderRadius: 8, objectFit: "cover", border: "1.5px solid #E5E7EB" }}
                         />
@@ -675,7 +676,7 @@ const PatientDashboard = () => {
                         <NotificationBell />
                         <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
                             <img
-                                src={getProfilePictureFromLocal('patient') || "https://i.pravatar.cc/36?img=5"}
+                                src={profile?.profilePicture || defaultpfp}
                                 alt="avatar"
                                 style={{ width: 34, height: 34, borderRadius: 8, objectFit: "cover", border: "1.5px solid #E5E7EB" }}
                             />

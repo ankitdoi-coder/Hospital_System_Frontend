@@ -2,13 +2,19 @@
 
 import axios from 'axios';
 
-// Create a single, centralized axios instance
 const apiClient = axios.create({
-    // Get the base URL from the environment variable
-    baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080', 
+    baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080',
     headers: {
         'Content-Type': 'application/json'
     }
+});
+
+// Let the browser set the correct multipart boundary when sending FormData
+apiClient.interceptors.request.use((config) => {
+    if (config.data instanceof FormData) {
+        delete config.headers['Content-Type'];
+    }
+    return config;
 });
 
 export default apiClient;

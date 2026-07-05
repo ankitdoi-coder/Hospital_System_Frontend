@@ -423,8 +423,8 @@ const DoctorDashboard = () => {
                             key={id}
                             onClick={() => { setActiveView(id); if (id === 'patients' || id === 'prescriptions') setSearchTerm(''); setSidebarOpen(false); }}
                             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${activeView === id
-                                    ? 'bg-blue-50 text-blue-700 shadow-sm'
-                                    : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                                ? 'bg-blue-50 text-blue-700 shadow-sm'
+                                : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
                                 }`}
                         >
                             <span className={activeView === id ? 'text-blue-600' : 'text-slate-400'}>{icon}</span>
@@ -437,7 +437,7 @@ const DoctorDashboard = () => {
                 <div className="p-4 border-t border-slate-100">
                     <div className="flex items-center gap-3 mb-4 px-2">
                         <img
-                            src={getProfilePictureFromLocal('doctor') || "https://i.pravatar.cc/150?img=11"}
+                            src={doctorProfile?.profilePicture || "https://i.pravatar.cc/150?img=11"}
                             alt="Profile"
                             className="w-10 h-10 rounded-full object-cover border-2 border-white shadow-sm"
                         />
@@ -476,6 +476,11 @@ const DoctorDashboard = () => {
                             <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
                             {new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
                         </div>
+                        <img
+                            src={doctorProfile?.profilePicture || "https://i.pravatar.cc/150?img=11"}
+                            alt="Profile"
+                            className="w-9 h-9 rounded-full object-cover border-2 border-white shadow-sm"
+                        />
                     </div>
                 </header>
 
@@ -559,9 +564,9 @@ const DoctorDashboard = () => {
                                                         </td>
                                                         <td className="px-6 py-4">
                                                             <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${appointment.status === 'COMPLETED' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
-                                                                    appointment.status === 'SCHEDULED' ? 'bg-blue-50 text-blue-700 border-blue-200' :
-                                                                        appointment.status === 'PENDING' ? 'bg-amber-50 text-amber-700 border-amber-200' :
-                                                                            'bg-red-50 text-red-700 border-red-200'
+                                                                appointment.status === 'SCHEDULED' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                                                                    appointment.status === 'PENDING' ? 'bg-amber-50 text-amber-700 border-amber-200' :
+                                                                        'bg-red-50 text-red-700 border-red-200'
                                                                 }`}>
                                                                 {appointment.status}
                                                             </span>
@@ -776,9 +781,9 @@ const DoctorDashboard = () => {
                         <div className="max-w-4xl mx-auto">
                             <ProfileSettings
                                 userType="doctor"
-                                userProfile={{ email: userEmail, firstName: doctorProfile?.firstName, lastName: doctorProfile?.lastName }}
+                                userProfile={doctorProfile}
                                 onProfileUpdate={async (updatedProfile) => {
-                                    console.log('Updating doctor profile:', updatedProfile);
+                                    setDoctorProfile(prev => ({ ...prev, ...updatedProfile }));
                                 }}
                             />
                         </div>

@@ -44,7 +44,7 @@ export const resetPassword = (token, newPassword) =>
 // Save JWT token to localStorage
 export const saveToken = (token) => {
     localStorage.setItem('jwtToken', token);
-    console.log('✅ Token saved to localStorage');
+    // console.log('✅ Token saved to localStorage');
 };
 
 // Get JWT token from localStorage
@@ -57,7 +57,7 @@ export const removeToken = () => {
     localStorage.removeItem('jwtToken');
     localStorage.removeItem('userRole');
     localStorage.removeItem('userEmail');
-    console.log('🗑️ Token removed from localStorage');
+    //console.log('🗑️ Token removed from localStorage');
 };
 
 // Check if user is authenticated
@@ -72,13 +72,13 @@ export const isAuthenticated = () => {
         const isValid = Date.now() < expiry;
         
         if (!isValid) {
-            console.warn('⚠️ Token expired');
+           // console.warn('⚠️ Token expired');
             removeToken();
         }
         
         return isValid;
     } catch (error) {
-        console.error('❌ Error checking token validity:', error);
+        //console.error('❌ Error checking token validity:', error);
         return false;
     }
 };
@@ -105,7 +105,7 @@ export const getUserRole = () => {
         
         return null;
     } catch (error) {
-        console.error('Error decoding token:', error);
+        //console.error('Error decoding token:', error);
         return null;
     }
 };
@@ -119,7 +119,7 @@ export const getUserEmail = () => {
         const payload = JSON.parse(atob(token.split('.')[1]));
         return payload.sub || payload.email || payload.username;
     } catch (error) {
-        console.error('Error decoding token:', error);
+       // console.error('Error decoding token:', error);
         return null;
     }
 };
@@ -139,11 +139,11 @@ let isRedirecting = false; // Prevent multiple redirects
 // Setup axios to automatically include JWT token in all requests
 export const setupAxiosInterceptors = () => {
     if (interceptorsSetup) {
-        console.log('⚙️ Interceptors already set up, skipping...');
+        //console.log('⚙️ Interceptors already set up, skipping...');
         return;
     }
 
-    console.log('⚙️ Setting up axios interceptors...');
+    //console.log('⚙️ Setting up axios interceptors...');
     
     // Request interceptor - Add token to headers
     apiClient.interceptors.request.use(
@@ -151,14 +151,14 @@ export const setupAxiosInterceptors = () => {
             const token = getToken();
             if (token) {
                 config.headers.Authorization = `Bearer ${token}`;
-                console.log('🔐 Token added to request:', config.url);
+               // console.log('🔐 Token added to request:', config.url);
             } else {
-                console.warn('⚠️ No token found for request:', config.url);
+                //console.warn('⚠️ No token found for request:', config.url);
             }
             return config;
         },
         (error) => {
-            console.error('❌ Request interceptor error:', error);
+           // console.error('❌ Request interceptor error:', error);
             return Promise.reject(error);
         }
     );
@@ -171,7 +171,7 @@ export const setupAxiosInterceptors = () => {
             if (newToken) {
                 const cleanToken = newToken.replace('Bearer ', '');
                 saveToken(cleanToken);
-                console.log('🔄 Token refreshed from backend');
+              //  console.log('🔄 Token refreshed from backend');
             }
             return response;
         },
@@ -180,7 +180,7 @@ export const setupAxiosInterceptors = () => {
                 const status = error.response.status;
                 
                 if (status === 401) {
-                    console.error('❌ 401 Unauthorized - Token invalid or expired');
+                    // console.error('❌ 401 Unauthorized - Token invalid or expired');
                     
                     // Prevent multiple simultaneous redirects
                     if (!isRedirecting) {
@@ -201,7 +201,7 @@ export const setupAxiosInterceptors = () => {
                         
                         // Show alert and redirect
                         setTimeout(() => {
-                            console.log(message);
+                            // console.log(message);
                             
                             window.location.href = '/login';
                         }, 100);
@@ -212,8 +212,8 @@ export const setupAxiosInterceptors = () => {
                         }, 2000);
                     }
                 } else if (status === 403) {
-                    console.error('❌ 403 Forbidden - Access denied');
-                    console.error('Response:', error.response.data);
+                 //   console.error('❌ 403 Forbidden - Access denied');
+                   // console.error('Response:', error.response.data);
                     
                     // Don't redirect for 403, just show error
                     const message = error.response.data?.message || 
@@ -223,16 +223,16 @@ export const setupAxiosInterceptors = () => {
                 }
             } else if (error.message === 'Token expired') {
                 // This is from our request interceptor
-                console.log('🔄 Token expired, already handling redirect');
+               // console.log('🔄 Token expired, already handling redirect');
             } else {
-                console.error('❌ Network or other error:', error.message);
+               // console.error('❌ Network or other error:', error.message);
             }
             return Promise.reject(error);
         }
     );
 
     interceptorsSetup = true;
-    console.log('✅ Axios interceptors set up successfully');
+   // console.log('✅ Axios interceptors set up successfully');
 };
 
 // Reset interceptors (useful for testing)
@@ -241,7 +241,7 @@ export const resetInterceptors = () => {
     isRedirecting = false;
     apiClient.interceptors.request.clear();
     apiClient.interceptors.response.clear();
-    console.log('🔄 Interceptors reset');
+  //  console.log('🔄 Interceptors reset');
 };
 
 // ==================== NAVIGATION HELPERS ====================
@@ -280,7 +280,7 @@ export const getUserInfo = () => {
             expiresIn: payload.exp ? (payload.exp * 1000 - Date.now()) / 1000 : null // seconds until expiry
         };
     } catch (error) {
-        console.error('Error decoding token:', error);
+     //   console.error('Error decoding token:', error);
         return null;
     }
 };
@@ -301,7 +301,7 @@ export const startTokenExpiryMonitor = (callback) => {
         
         // Warn user 5 minutes before token expires
         if (expiresIn && expiresIn < 300 && expiresIn > 0) {
-            console.warn('⚠️ Token expiring soon:', Math.floor(expiresIn), 'seconds');
+           // console.warn('⚠️ Token expiring soon:', Math.floor(expiresIn), 'seconds');
             if (callback) {
                 callback(Math.floor(expiresIn));
             }
@@ -309,7 +309,7 @@ export const startTokenExpiryMonitor = (callback) => {
         
         // Token has expired
         if (expiresIn && expiresIn <= 0) {
-            console.error('❌ Token has expired');
+          //  console.error('❌ Token has expired');
             clearInterval(checkInterval);
             if (!isRedirecting) {
                 removeToken();
