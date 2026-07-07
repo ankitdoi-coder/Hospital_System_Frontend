@@ -192,6 +192,18 @@ const Register = () => {
                             </select>
                             {errors.role && <div className="text-red-500 text-sm mt-1">{errors.role.message}</div>}
                         </div>
+                        {/* Contact Number — common for patient & doctor */}
+                        {selectedRole && (
+                            <div className="relative mb-6">
+                                <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                    <svg className="w-5 h-5 text-gray-600" fill="currentColor" viewBox="0 0 20 20"><path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" /></svg>
+                                </div>
+                                <input type="tel" {...register("contactNumber", { required: "⚠️Contact Number is required", pattern: { value: /^[0-9]{10}$/, message: "⚠️Must be 10 digits" } })}
+                                    className="bg-white/50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-3 placeholder-gray-500"
+                                    placeholder="Contact Number" />
+                                {errors.contactNumber && <div className="text-red-500 text-sm mt-1">{errors.contactNumber.message}</div>}
+                            </div>
+                        )}
 
                         {/* Patient fields */}
                         {selectedRole === 'patient' && (
@@ -204,15 +216,7 @@ const Register = () => {
                                         className="bg-white/50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-3" />
                                     {errors.dob && <div className="text-red-500 text-sm mt-1">{errors.dob.message}</div>}
                                 </div>
-                                <div className="relative mb-6">
-                                    <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                                        <svg className="w-5 h-5 text-gray-600" fill="currentColor" viewBox="0 0 20 20"><path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" /></svg>
-                                    </div>
-                                    <input type="tel" {...register("contactNumber", { required: "⚠️Contact Number is required", pattern: { value: /^[0-9]{10}$/, message: "⚠️Must be 10 digits" } })}
-                                        className="bg-white/50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-3 placeholder-gray-500"
-                                        placeholder="Contact Number" />
-                                    {errors.contactNumber && <div className="text-red-500 text-sm mt-1">{errors.contactNumber.message}</div>}
-                                </div>
+
                             </>
                         )}
 
