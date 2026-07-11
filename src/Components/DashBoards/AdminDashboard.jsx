@@ -1,9 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAppSelector, useAppDispatch } from '../../store/hooks';
-// eslint-disable-next-line no-unused-vars
-import { setDoctors, setPendingDoctors, setLoading as setDoctorsLoading, approveDoctor as approveDoctorAction, rejectDoctor as rejectDoctorAction } from '../../store/slices/doctorsSlice';
-import { setPatients, setLoading as setPatientsLoading } from '../../store/slices/patientsSlice';
 import { removeToken, getUserEmail, isAuthenticated, setupAxiosInterceptors } from "../../Services/AuthService.js";
 import { getDoctors, approveDoctor, rejectDoctor, getPatients, getBilling, updateBillingStatus, getDailyRevenue, getMonthlyRevenue } from "../../Services/AdminService.js";
 import logo from "../../assets/OnlyLogo.svg";
@@ -23,14 +19,22 @@ const NAV_ITEMS = [
     },
 ];
 
+// Handles both a plain array response and a Spring-style paginated
+// { content, totalPages } response, since different admin endpoints
+// currently disagree on which shape they return.
+const normalizePage = (r) => ({
+    list: Array.isArray(r) ? r : (r?.content || []),
+    totalPages: Array.isArray(r) ? 1 : (r?.totalPages || 1),
+});
+
 const AdminDashboard = () => {
     const navigate = useNavigate();
-    const dispatch = useAppDispatch();
     const userEmail = getUserEmail();
 
-    const { list: doctors, loading: doctorsLoading } = useAppSelector(state => state.doctors);
-    const { list: patients, loading: patientsLoading } = useAppSelector(state => state.patients);
-
+    const [doctors, setDoctors] = useState([]);
+    const [patients, setPatients] = useState([]);
+    const [doctorsLoading, setDoctorsLoading] = useState(true);
+    const [patientsLoading, setPatientsLoading] = useState(false);
     const [billing, setBilling] = useState([]);
     const [dailyRevenue, setDailyRevenue] = useState(0);
     const [monthlyRevenue, setMonthlyRevenue] = useState(0);
@@ -54,31 +58,60 @@ const AdminDashboard = () => {
         removeToken(); navigate('/login', { replace: true });
     }, [navigate]);
 
-    useEffect(() => {
-        setupAxiosInterceptors();
-        if (!isAuthenticated()) { handleLogout(); return; }
-        fetchRevenue(); // Revenue sirf ek baar fetch hoga
-    }, []);
-
-   
-    const fetchDoctors = async () => {
+    const fetchDoctors = useCallback(async () => {
         try {
-            setError(null); dispatch(setDoctorsLoading(true));
+            setError(null); setDoctorsLoading(true);
+            // FIX: getDoctors() already returns response.data (the service
+            // is `async ... return response.data`). It was being treated
+            // here as the raw axios response (`r.data.content`), which is
+            // `undefined.content` → throws → silently swallowed as
+            // "failed to load".
             const r = await getDoctors(docPage, SIZE);
-            dispatch(setDoctors(r.data.content || r.data)); // Sirf array dispatch karo
-            setDocTotalPages(r.data.totalPages || 1);
+            const { list, totalPages } = normalizePage(r);
+            setDoctors(list);
+            setDocTotalPages(totalPages);
         } catch (e) {
             if (!e.response || ![401, 403].includes(e.response.status))
                 setError('Failed to load doctors. Please try again.');
-        } finally { dispatch(setDoctorsLoading(false)); }
-    };
+        } finally { setDoctorsLoading(false); }
+    }, [docPage]);
 
-    const fetchRevenue = async () => {
+    const fetchPatients = useCallback(async () => {
+        try {
+            setPatientsLoading(true);
+            const r = await getPatients(patPage, SIZE);
+            const { list, totalPages } = normalizePage(r);
+            setPatients(list);
+            setPatTotalPages(totalPages);
+        } catch { } finally { setPatientsLoading(false); }
+    }, [patPage]);
+
+    const fetchBilling = useCallback(async () => {
+        try {
+            const r = await getBilling(billPage, SIZE);
+            const { list, totalPages } = normalizePage(r);
+            setBilling(list);
+            setBillTotalPages(totalPages);
+        } catch { }
+    }, [billPage]);
+
+    const fetchRevenue = useCallback(async () => {
         try {
             const [daily, monthly] = await Promise.all([getDailyRevenue(), getMonthlyRevenue()]);
             setDailyRevenue(daily.data); setMonthlyRevenue(monthly.data);
         } catch { }
-    };
+    }, []);
+
+    useEffect(() => {
+        setupAxiosInterceptors();
+        if (!isAuthenticated()) { handleLogout(); return; }
+        fetchRevenue();
+    }, [handleLogout, fetchRevenue]);
+
+    // One effect per tab's data, each re-running only when its own page changes.
+    useEffect(() => { fetchDoctors(); }, [fetchDoctors]);
+    useEffect(() => { fetchPatients(); }, [fetchPatients]);
+    useEffect(() => { fetchBilling(); }, [fetchBilling]);
 
     const showNotification = (message, type) => {
         const el = document.createElement('div');
@@ -96,7 +129,8 @@ const AdminDashboard = () => {
     const handleApprove = async (id) => {
         try {
             setActionLoading(`approve-${id}`);
-            await approveDoctor(id); dispatch(approveDoctorAction(id));
+            await approveDoctor(id);
+            setDoctors(prev => prev.map(d => d.id === id ? { ...d, isApproved: true, status: 'APPROVED' } : d));
             showNotification('Doctor approved successfully!', 'success');
         } catch (e) {
             if (!e.response || ![401, 403].includes(e.response.status))
@@ -107,7 +141,8 @@ const AdminDashboard = () => {
     const handleReject = async (id) => {
         try {
             setActionLoading(`reject-${id}`);
-            await rejectDoctor(id); dispatch(rejectDoctorAction(id));
+            await rejectDoctor(id);
+            setDoctors(prev => prev.map(d => d.id === id ? { ...d, isApproved: false, status: 'REJECTED' } : d));
             showNotification('Doctor rejected successfully!', 'success');
         } catch (e) {
             if (!e.response || ![401, 403].includes(e.response.status))
@@ -149,7 +184,6 @@ const AdminDashboard = () => {
                     font-family:'Inter','Segoe UI',system-ui,sans-serif;
                     font-size:14px; color:#111827;
                 }
-                /* sidebar */
                 .adm-sidebar {
                     width:210px; flex-shrink:0;
                     background:#fff; border-right:1px solid #E5E7EB;
@@ -173,10 +207,8 @@ const AdminDashboard = () => {
                     font-weight:600;
                     border-left-color:#2563EB !important;
                 }
-                /* table rows */
                 .adm-tr { border-bottom:1px solid #F3F4F6; transition:background 0.1s; }
                 .adm-tr:hover td { background:#F9FAFB; }
-                /* action btns */
                 .ab { padding:6px 13px; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer; border:none; transition:background 0.12s; white-space:nowrap; }
                 .ab:disabled { opacity:.45; cursor:not-allowed; }
                 .ab-green { background:#059669; color:#fff; }
@@ -185,7 +217,6 @@ const AdminDashboard = () => {
                 .ab-red:hover:not(:disabled)   { background:#B91C1C; }
                 .ab-ghost { background:#fff; color:#374151; border:1px solid #D1D5DB; }
                 .ab-ghost:hover:not(:disabled) { background:#F3F4F6; }
-                /* hamburger hidden on desktop */
                 .adm-hamburger { display:none; }
                 @media (max-width:767px) {
                     .adm-sidebar { position:fixed; top:0; left:0; bottom:0; transform:translateX(-100%); }
@@ -198,7 +229,6 @@ const AdminDashboard = () => {
 
             <div className="adm-root">
 
-                {/* Mobile overlay */}
                 {sidebarOpen && (
                     <div onClick={() => setSidebarOpen(false)}
                         style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.35)', zIndex: 40 }} />
@@ -207,7 +237,6 @@ const AdminDashboard = () => {
                 {/* ══ SIDEBAR ══ */}
                 <aside className={`adm-sidebar${sidebarOpen ? ' open' : ''}`}>
 
-                    {/* Logo */}
                     <div style={{ padding: '18px 16px 14px', borderBottom: '1px solid #F3F4F6' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                             <div style={{ width: 34, height: 34, borderRadius: 8, background: '#2563EB', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -220,7 +249,6 @@ const AdminDashboard = () => {
                         </div>
                     </div>
 
-                    {/* Nav */}
                     <nav style={{ flex: 1, padding: '14px 10px' }}>
                         <p style={{ fontSize: 10, fontWeight: 700, color: '#9CA3AF', letterSpacing: '0.08em', textTransform: 'uppercase', padding: '0 8px', marginBottom: 8 }}>
                             Menu
@@ -237,7 +265,6 @@ const AdminDashboard = () => {
                         ))}
                     </nav>
 
-                    {/* User + Logout */}
                     <div style={{ padding: '12px 14px', borderTop: '1px solid #F3F4F6' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 9, marginBottom: 10 }}>
                             <div style={{ width: 34, height: 34, borderRadius: 8, background: '#EFF6FF', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -267,7 +294,6 @@ const AdminDashboard = () => {
                 {/* ══ MAIN ══ */}
                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' }}>
 
-                    {/* Header */}
                     <header style={{ background: '#F9FAFB', borderBottom: '1px solid #E5E7EB', padding: '0 24px', height: 58, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', boxShadow: '0 1px 4px rgba(0,0,0,0.05)' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                             <button className="adm-hamburger" onClick={() => setSidebarOpen(v => !v)}
@@ -296,10 +322,8 @@ const AdminDashboard = () => {
                         </div>
                     </header>
 
-                    {/* Content */}
                     <main style={{ flex: 1, overflowY: 'auto', padding: '22px 24px' }}>
 
-                        {/* Revenue strip — billing only */}
                         {activeTab === 'billing' && (
                             <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
                                 {[['Daily Revenue', `₹${dailyRevenue}`], ['Monthly Revenue', `₹${monthlyRevenue}`]].map(([l, v]) => (
@@ -311,10 +335,8 @@ const AdminDashboard = () => {
                             </div>
                         )}
 
-                        {/* Table card */}
                         <div style={{ background: '#fff', borderRadius: 10, border: '1px solid #E5E7EB', boxShadow: '0 1px 4px rgba(0,0,0,0.05)', overflow: 'hidden' }}>
 
-                            {/* Card header */}
                             <div style={{ padding: '14px 18px', borderBottom: '1px solid #F3F4F6', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
                                 <div>
                                     <p style={{ fontWeight: 700, fontSize: 15, color: '#111827', margin: 0 }}>{PAGE_TITLE}</p>
@@ -329,7 +351,6 @@ const AdminDashboard = () => {
                                 </button>
                             </div>
 
-                            {/* Error */}
                             {error && (
                                 <div style={{ background: '#FEF2F2', borderBottom: '1px solid #FECACA', color: '#991B1B', padding: '10px 18px', fontSize: 13, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                     {error}
@@ -337,7 +358,6 @@ const AdminDashboard = () => {
                                 </div>
                             )}
 
-                            {/* Spinner */}
                             {loading ? (
                                 <div style={{ padding: '56px 24px', textAlign: 'center', color: '#9CA3AF' }}>
                                     <div className="adm-spinner" />
@@ -388,7 +408,6 @@ const AdminDashboard = () => {
                                             }
                                         </tbody>
                                     </table>
-                                    {/* Add this inside the Doctors div, below </table> */}
                                     {docTotalPages > 1 && (
                                         <div style={{ display: 'flex', justifyContent: 'space-between', padding: '15px 20px', borderTop: '1px solid #E5E7EB', background: '#F9FAFB' }}>
                                             <button className="ab ab-ghost" disabled={docPage === 0} onClick={() => setDocPage(p => p - 1)}>Previous</button>
@@ -429,7 +448,6 @@ const AdminDashboard = () => {
                                             }
                                         </tbody>
                                     </table>
-                                    {/* Add this inside the Patients div, below </table> */}
                                     {patTotalPages > 1 && (
                                         <div style={{ display: 'flex', justifyContent: 'space-between', padding: '15px 20px', borderTop: '1px solid #E5E7EB', background: '#F9FAFB' }}>
                                             <button className="ab ab-ghost" disabled={patPage === 0} onClick={() => setPatPage(p => p - 1)}>Previous</button>
@@ -472,7 +490,6 @@ const AdminDashboard = () => {
                                             }
                                         </tbody>
                                     </table>
-                                    {/* Add this inside the Billing div, below </table> */}
                                     {billTotalPages > 1 && (
                                         <div style={{ display: 'flex', justifyContent: 'space-between', padding: '15px 20px', borderTop: '1px solid #E5E7EB', background: '#F9FAFB' }}>
                                             <button className="ab ab-ghost" disabled={billPage === 0} onClick={() => setBillPage(p => p - 1)}>Previous</button>

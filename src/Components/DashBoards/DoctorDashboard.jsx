@@ -1,16 +1,59 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAppSelector, useAppDispatch } from '../../store/hooks';
-import { setAppointments, setLoading, updateAppointment, setPatients } from '../../store/slices/appointmentsSlice';
-import { setPrescriptions, addPrescription } from '../../store/slices/prescriptionsSlice';
-import { selectCompletedAppointments, selectPendingAppointments, selectScheduledAppointments, selectTodayAppointments } from '../../store/selectors';
 
 import { removeToken, getUserEmail, setupAxiosInterceptors } from "../../Services/AuthService.js";
 import toast, { Toaster } from 'react-hot-toast';
-// eslint-disable-next-line no-unused-vars
-import { getMyAppointments, updateAppointmentStatus, createPrescription, getMyPatients, getMyPrescriptions, getDoctorProfile, getMyNotifications, getUnreadCount, markNotificationRead, markAllNotificationsRead } from "../../Services/DoctorService.js";
+import {
+    getMyAppointments, updateAppointmentStatus, createPrescription,
+    getMyPatients, getMyPrescriptions, getDoctorProfile,
+    getMyNotifications, getUnreadCount, markNotificationRead, markAllNotificationsRead
+} from "../../Services/DoctorService.js";
 import ProfileSettings from "../ProfileSettings.jsx";
-import logo from "../../assets/OnlyLogo.svg"
+import logo from "../../assets/OnlyLogo.svg";
+
+/* ─────────────────────────────────────────────
+   Handles both a plain array response and a
+   Spring-style paginated { content, totalPages }
+   response, since your endpoints don't all agree
+   on shape, and DoctorService already unwraps
+   axios's response.data for you (so DO NOT do
+   response.data.content here — that was the bug).
+───────────────────────────────────────────── */
+const normalizePage = (r) => ({
+    list: Array.isArray(r) ? r : (r?.content || []),
+    totalPages: Array.isArray(r) ? 1 : (r?.totalPages || 1),
+});
+
+/* ─────────────────────────────────────────────
+   AVATAR
+   Small shared helper so every place we show a
+   patient's picture behaves the same way: use the
+   photo if we have one, otherwise fall back to a
+   colored initials badge. Keeping this in one spot
+   means we only have to fix broken-image handling
+   once.
+───────────────────────────────────────────── */
+const PatientAvatar = ({ src, firstName, lastName, sizeClass = 'w-9 h-9', bg = 'bg-blue-100', text = 'text-blue-700' }) => {
+    const [imgError, setImgError] = useState(false);
+    const initials = `${(firstName?.[0] || '')}${(lastName?.[0] || '')}`;
+
+    if (src && !imgError) {
+        return (
+            <img
+                src={src}
+                alt={`${firstName || ''} ${lastName || ''}`.trim() || 'Patient'}
+                onError={() => setImgError(true)}
+                className={`${sizeClass} rounded-full object-cover border border-slate-200 flex-shrink-0`}
+            />
+        );
+    }
+
+    return (
+        <div className={`${sizeClass} rounded-full ${bg} ${text} flex items-center justify-center font-bold flex-shrink-0`}>
+            {initials}
+        </div>
+    );
+};
 
 /* ─────────────────────────────────────────────
    NOTIFICATION BELL
@@ -24,7 +67,11 @@ const NotificationBell = () => {
 
     useEffect(() => {
         const fetchCount = async () => {
-            try { const res = await getUnreadCount(); setUnreadCount(res.data); } catch { }
+            try {
+                const res = await getUnreadCount();
+                // service returns response.data already (a number) — don't re-unwrap
+                setUnreadCount(typeof res === 'number' ? res : (res?.data ?? 0));
+            } catch { }
         };
         fetchCount();
         window.addEventListener('focus', fetchCount);
@@ -41,7 +88,15 @@ const NotificationBell = () => {
         const next = !open;
         setOpen(next);
         if (next) {
-            try { const res = await getMyNotifications(); setNotifications(res.data); } catch { }
+            try {
+                setLoadingNotifs(true);
+                const res = await getMyNotifications();
+                setNotifications(Array.isArray(res) ? res : (res?.data || []));
+            } catch {
+                setNotifications([]);
+            } finally {
+                setLoadingNotifs(false);
+            }
         }
     };
 
@@ -113,13 +168,17 @@ const NotificationBell = () => {
 
 const DoctorDashboard = () => {
     const navigate = useNavigate();
-    const dispatch = useAppDispatch();
     const userEmail = getUserEmail();
     const [doctorProfile, setDoctorProfile] = useState(null);
     const displayName = doctorProfile ? `${doctorProfile.firstName} ${doctorProfile.lastName}` : userEmail;
 
-    const { list: appointments, loading, patients } = useAppSelector(state => state.appointments);
-    const { list: prescriptions } = useAppSelector(state => state.prescriptions);
+    // ── Local state replaces Redux entirely. Every list starts as [] —
+    // never undefined — so .filter()/.map() on first render can't crash. ──
+    const [appointments, setAppointments] = useState([]);
+    const [patients, setPatients] = useState([]);
+    const [prescriptions, setPrescriptions] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
 
     const [selectedAppointment, setSelectedAppointment] = useState(null);
     const [prescriptionData, setPrescriptionData] = useState({ medicationDetails: '', dosages: '' });
@@ -139,74 +198,87 @@ const DoctorDashboard = () => {
     const [patTotalPages, setPatTotalPages] = useState(1);
     const SIZE = 10;
 
+    const fetchAppointments = useCallback(async () => {
+        try {
+            setLoading(true);
+            setError(null);
+            const r = await getMyAppointments(aptPage, SIZE); // already unwrapped by the service
+            const { list, totalPages } = normalizePage(r);
+            setAppointments(list);
+            setAptTotalPages(totalPages);
+        } catch (err) {
+            console.error('Error fetching appointments:', err);
+            setAppointments([]); // never leave it undefined
+            setError('Failed to load appointments.');
+        } finally {
+            setLoading(false);
+        }
+    }, [aptPage]);
+
+    const fetchPatients = useCallback(async () => {
+        try {
+            const r = await getMyPatients(patPage, SIZE); // already unwrapped by the service
+            const { list, totalPages } = normalizePage(r);
+            setPatients(list);
+            setPatTotalPages(totalPages);
+        } catch (err) {
+            console.error('Error fetching patients:', err);
+            // Fallback: derive a unique patient list from completed appointments
+            setPatients(prevPatients => {
+                const completedAppts = (appointments || []).filter(apt => apt.status === 'COMPLETED');
+                const seen = new Set();
+                const derived = [];
+                completedAppts.forEach(apt => {
+                    if (!seen.has(apt.patientId)) {
+                        seen.add(apt.patientId);
+                        derived.push({
+                            id: apt.patientId,
+                            firstName: apt.patientFirstName || 'Patient',
+                            lastName: apt.patientLastName || `#${apt.patientId}`,
+                            // pull the pfp along with the rest of the appointment's
+                            // patient fields so the directory card has something to show
+                            profilePicture: apt.patientProfilePicture || null,
+                            appointmentDate: apt.appointmentDate,
+                            appointmentCount: completedAppts.filter(a => a.patientId === apt.patientId).length
+                        });
+                    }
+                });
+                return derived.length > 0 ? derived : (prevPatients || []);
+            });
+        }
+    }, [patPage, appointments]);
+
+    const fetchPrescriptions = useCallback(async () => {
+        try {
+            const r = await getMyPrescriptions(); // already unwrapped by the service
+            setPrescriptions(Array.isArray(r) ? r : (r?.content || []));
+        } catch (err) {
+            console.error('Error fetching prescriptions:', err);
+            setPrescriptions([]);
+        }
+    }, []);
+
     // --- Initial Load ---
     useEffect(() => {
         setupAxiosInterceptors();
         fetchPrescriptions();
-        getDoctorProfile().then(res => setDoctorProfile(res.data)).catch((err) => console.error('getDoctorProfile failed:', err?.response?.status, err?.response?.data));
+        getDoctorProfile()
+            .then(res => setDoctorProfile(res?.data ?? res))
+            .catch((err) => console.error('getDoctorProfile failed:', err?.response?.status, err?.response?.data));
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     // --- Paginated Effects ---
-    useEffect(() => { fetchAppointments(); }, [aptPage]);
-    useEffect(() => { fetchPatients(); }, [patPage]);
+    useEffect(() => { fetchAppointments(); }, [fetchAppointments]);
+    useEffect(() => { fetchPatients(); }, [patPage]); // eslint-disable-line react-hooks/exhaustive-deps
 
-    const fetchAppointments = async () => {
-        try {
-            dispatch(setLoading(true));
-            const response = await getMyAppointments(aptPage, SIZE);
-            dispatch(setAppointments(response.data.content || response.data));
-            setAptTotalPages(response.data.totalPages || 1);
-        } catch (error) {
-            console.error('Error fetching appointments:', error);
-        } finally {
-            dispatch(setLoading(false));
-        }
-    };
-
-    const fetchPatients = async () => {
-        try {
-            const response = await getMyPatients(patPage, SIZE);
-            dispatch(setPatients(response.data.content || response.data));
-            setPatTotalPages(response.data.totalPages || 1);
-        } catch (error) {
-            console.error('Error fetching patients:', error);
-            // Fallback unique patient logic
-            const completedAppts = appointments.filter(apt => apt.status === 'COMPLETED');
-            const uniquePatients = [];
-            const seenPatientIds = new Set();
-            completedAppts.forEach(apt => {
-                if (!seenPatientIds.has(apt.patientId)) {
-                    seenPatientIds.add(apt.patientId);
-                    uniquePatients.push({
-                        id: apt.patientId,
-                        firstName: apt.patientFirstName || 'Patient',
-                        lastName: apt.patientLastName || `#${apt.patientId}`,
-                        appointmentDate: apt.appointmentDate,
-                        appointmentCount: completedAppts.filter(a => a.patientId === apt.patientId).length
-                    });
-                }
-            });
-            dispatch(setPatients(uniquePatients));
-        }
-    };
-
-    const fetchPrescriptions = async () => {
-        try {
-            const response = await getMyPrescriptions();
-            dispatch(setPrescriptions(response.data || []));
-        } catch (error) {
-            console.error('Error fetching prescriptions:', error);
-            dispatch(setPrescriptions([]));
-        }
-    };
-
-    const filteredPatients = patients.filter(patient =>
+    const filteredPatients = (patients || []).filter(patient =>
         patient && (
             ((patient.firstName || '') + ' ' + (patient.lastName || '')).toLowerCase().includes(searchTerm.toLowerCase())
         )
     );
 
-    const filteredPrescriptions = prescriptions.filter(prescription =>
+    const filteredPrescriptions = (prescriptions || []).filter(prescription =>
         prescription && (
             ((prescription.patientFirstName || '') + ' ' + (prescription.patientLastName || '')).toLowerCase().includes(searchTerm.toLowerCase()) ||
             (prescription.medicationDetails || '').toLowerCase().includes(searchTerm.toLowerCase())
@@ -216,8 +288,9 @@ const DoctorDashboard = () => {
     const handleStatusUpdate = async (appointmentId, newStatus) => {
         setActionLoading(prev => ({ ...prev, [appointmentId]: newStatus }));
         try {
-            const response = await updateAppointmentStatus(appointmentId, newStatus);
-            dispatch(updateAppointment(response.data));
+            const res = await updateAppointmentStatus(appointmentId, newStatus);
+            const updated = res?.data ?? res;
+            setAppointments(prev => prev.map(a => a.id === appointmentId ? { ...a, ...updated } : a));
             const messages = { SCHEDULED: 'Appointment accepted!', COMPLETED: 'Appointment marked as completed!', CANCELED: 'Appointment cancelled.' };
             toast.success(messages[newStatus] || 'Status updated!', { position: 'top-right' });
         } catch (error) {
@@ -237,8 +310,9 @@ const DoctorDashboard = () => {
                 medicationDetails: prescriptionData.medicationDetails,
                 dosages: prescriptionData.dosages
             };
-            const response = await createPrescription(prescription);
-            dispatch(addPrescription(response.data));
+            const res = await createPrescription(prescription);
+            const created = res?.data ?? res;
+            setPrescriptions(prev => [created, ...prev]);
             setShowPrescriptionModal(false);
             setPrescriptionData({ medicationDetails: '', dosages: '' });
             toast.success('Prescription created successfully!', { position: 'top-right' });
@@ -267,7 +341,7 @@ const DoctorDashboard = () => {
             fetchPrescriptions();
         } catch (error) {
             console.error('Error updating prescription:', error);
-            alert('Failed to update prescription');
+            toast.error('Failed to update prescription.', { position: 'top-right' });
         }
     };
 
@@ -280,8 +354,8 @@ const DoctorDashboard = () => {
         const issueDate = prescription.createdAt
             ? new Date(prescription.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' })
             : new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' });
-        const medications = prescription.medicationDetails.split(',').map(m => m.trim()).filter(Boolean);
-        const dosages = prescription.dosages.split(',').map(d => d.trim()).filter(Boolean);
+        const medications = (prescription.medicationDetails || '').split(',').map(m => m.trim()).filter(Boolean);
+        const dosages = (prescription.dosages || '').split(',').map(d => d.trim()).filter(Boolean);
         w.document.write(`<!DOCTYPE html><html><head><title>Prescription #${prescription.id}</title><style>
             * { margin: 0; padding: 0; box-sizing: border-box; }
             body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background: #e2e8f0; display: flex; justify-content: center; padding: 40px 20px; color: #0f172a; }
@@ -345,10 +419,13 @@ const DoctorDashboard = () => {
         navigate('/login');
     };
 
-    const completedAppointments = useAppSelector(selectCompletedAppointments).length;
-    const pendingAppointments = useAppSelector(selectPendingAppointments).length;
-    const scheduledAppointments = useAppSelector(selectScheduledAppointments).length;
-    const todayAppointments = useAppSelector(selectTodayAppointments).length;
+    // --- Derived stats (computed locally, no selectors needed) ---
+    const completedAppointments = appointments.filter(a => a.status === 'COMPLETED').length;
+    const pendingAppointments = appointments.filter(a => a.status === 'PENDING').length;
+    const scheduledAppointments = appointments.filter(a => a.status === 'SCHEDULED').length;
+    const todayAppointments = appointments.filter(a =>
+        new Date(a.appointmentDate).toDateString() === new Date().toDateString()
+    ).length;
 
     const getDaysInMonth = (date) => new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
     const getFirstDayOfMonth = (date) => new Date(date.getFullYear(), date.getMonth(), 1).getDay();
@@ -392,7 +469,6 @@ const DoctorDashboard = () => {
         <div className="flex h-screen overflow-hidden bg-slate-50 font-sans text-slate-800">
             <Toaster />
 
-            {/* Mobile backdrop */}
             {sidebarOpen && (
                 <div
                     className="fixed inset-0 bg-slate-900/50 z-40 lg:hidden transition-opacity"
@@ -400,10 +476,8 @@ const DoctorDashboard = () => {
                 />
             )}
 
-            {/* Sidebar */}
             <aside className={`fixed inset-y-0 left-0 w-64 bg-white border-r border-slate-200 z-50 transform transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0 flex flex-col ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
 
-                {/* Logo */}
                 <div className="p-6 border-b border-slate-100">
                     <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-lg bg-blue-600 flex flex-shrink-0 items-center justify-center shadow-sm">
@@ -416,7 +490,6 @@ const DoctorDashboard = () => {
                     </div>
                 </div>
 
-                {/* Nav */}
                 <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
                     <p className="px-3 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Main Menu</p>
                     {NAV_ITEMS.map(({ id, label, icon }) => (
@@ -434,7 +507,6 @@ const DoctorDashboard = () => {
                     ))}
                 </nav>
 
-                {/* User Info */}
                 <div className="p-4 border-t border-slate-100">
                     <div className="flex items-center gap-3 mb-4 px-2">
                         <img
@@ -457,10 +529,8 @@ const DoctorDashboard = () => {
                 </div>
             </aside>
 
-            {/* Main Content */}
             <div className="flex-1 flex flex-col overflow-hidden">
 
-                {/* Header */}
                 <header className="bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between sticky top-0 z-30">
                     <div className="flex items-center gap-4">
                         <button onClick={() => setSidebarOpen(true)} className="lg:hidden p-2 text-slate-500 hover:bg-slate-100 rounded-lg">
@@ -486,9 +556,16 @@ const DoctorDashboard = () => {
                 </header>
 
                 <main className="flex-1 overflow-y-auto p-6 lg:p-8">
+
+                    {error && (
+                        <div className="max-w-7xl mx-auto mb-4 bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-lg flex items-center justify-between">
+                            {error}
+                            <button onClick={() => setError(null)} className="font-bold text-red-500 hover:text-red-700">×</button>
+                        </div>
+                    )}
+
                     {activeView === 'dashboard' ? (
                         <div className="max-w-7xl mx-auto space-y-8">
-                            {/* Stats Grid - Cleaned up */}
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
                                 {[
                                     { label: 'Total Patients', val: appointments.length, color: 'text-blue-600', bg: 'bg-blue-50' },
@@ -509,7 +586,6 @@ const DoctorDashboard = () => {
                                 ))}
                             </div>
 
-                            {/* Recent Appointments Table */}
                             <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
                                 <div className="px-6 py-5 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                                     <div>
@@ -546,9 +622,11 @@ const DoctorDashboard = () => {
                                                     <tr key={appointment.id} className="hover:bg-slate-50/50 transition-colors">
                                                         <td className="px-6 py-4">
                                                             <div className="flex items-center gap-3">
-                                                                <div className="w-9 h-9 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-sm font-bold">
-                                                                    {(appointment.patientFirstName?.[0] || '')}{(appointment.patientLastName?.[0] || '')}
-                                                                </div>
+                                                                <PatientAvatar
+                                                                    src={appointment.profilePicture}
+
+                                                                    sizeClass="w-9 h-9"
+                                                                />
                                                                 <div>
                                                                     <p className="text-sm font-medium text-slate-900">{appointment.patientFirstName} {appointment.patientLastName}</p>
                                                                     <p className="text-xs text-slate-500">ID: {appointment.patientId}</p>
@@ -621,19 +699,18 @@ const DoctorDashboard = () => {
                                         </tbody>
                                     </table>
                                 </div>
-                                {/* Appointments Pagination */}
                                 {aptTotalPages > 1 && (
                                     <div className="px-6 py-4 border-t border-slate-200 bg-slate-50 flex items-center justify-between">
-                                        <button 
-                                            disabled={aptPage === 0} 
+                                        <button
+                                            disabled={aptPage === 0}
                                             onClick={() => setAptPage(p => p - 1)}
                                             className="px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium text-slate-700 bg-white hover:bg-slate-50 disabled:opacity-50"
                                         >
                                             Previous
                                         </button>
                                         <span className="text-sm font-medium text-slate-500">Page {aptPage + 1} of {aptTotalPages}</span>
-                                        <button 
-                                            disabled={aptPage >= aptTotalPages - 1} 
+                                        <button
+                                            disabled={aptPage >= aptTotalPages - 1}
                                             onClick={() => setAptPage(p => p + 1)}
                                             className="px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium text-slate-700 bg-white hover:bg-slate-50 disabled:opacity-50"
                                         >
@@ -707,9 +784,11 @@ const DoctorDashboard = () => {
                                     <div key={patient.id} className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all group">
                                         <div className="flex items-start justify-between mb-4">
                                             <div className="flex items-center gap-3">
-                                                <div className="w-12 h-12 rounded-full bg-slate-100 text-slate-700 flex items-center justify-center text-lg font-bold">
-                                                    {(patient.firstName?.[0] || '')}{(patient.lastName?.[0] || '')}
-                                                </div>
+                                                <PatientAvatar
+                                                    src={patient.profilePicture}
+
+                                                    sizeClass="w-9 h-9"
+                                                />
                                                 <div>
                                                     <h3 className="font-bold text-slate-800">{patient.firstName} {patient.lastName}</h3>
                                                     <p className="text-xs text-slate-500 font-mono mt-0.5">ID: {patient.id}</p>
@@ -730,19 +809,18 @@ const DoctorDashboard = () => {
                                     </div>
                                 ))}
                             </div>
-                            {/* Patients Pagination */}
                             {patTotalPages > 1 && (
                                 <div className="mt-6 flex items-center justify-between bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-                                    <button 
-                                        disabled={patPage === 0} 
+                                    <button
+                                        disabled={patPage === 0}
                                         onClick={() => setPatPage(p => p - 1)}
                                         className="px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
                                     >
                                         Previous
                                     </button>
                                     <span className="text-sm font-medium text-slate-500">Page {patPage + 1} of {patTotalPages}</span>
-                                    <button 
-                                        disabled={patPage >= patTotalPages - 1} 
+                                    <button
+                                        disabled={patPage >= patTotalPages - 1}
                                         onClick={() => setPatPage(p => p + 1)}
                                         className="px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
                                     >
@@ -831,7 +909,6 @@ const DoctorDashboard = () => {
                 </main>
             </div>
 
-            {/* Modal Layer */}
             {(showPrescriptionModal || showEditModal) && (
                 <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
                     <div className="bg-white rounded-xl shadow-xl w-full max-w-lg border border-slate-200 overflow-hidden" onClick={e => e.stopPropagation()}>

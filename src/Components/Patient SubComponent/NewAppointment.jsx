@@ -20,10 +20,18 @@ const NewAppointment = () => {
         setupAxiosInterceptors();
         const fetchDoctors = async () => {
             try {
-                const response = await getDoctors();
-                setDoctors(response.data);
+                // Your backend's /api/patient/doctors endpoint currently
+                // returns a plain array, NOT the { content, totalPages }
+                // paginated shape the other endpoints use. Handle both so
+                // this keeps working if the backend is later changed to
+                // paginate. Also request a larger page size in case it
+                // does paginate, so the dropdown isn't capped at 10.
+                const response = await getDoctors(0, 200);
+                const list = Array.isArray(response) ? response : (response?.content || []);
+                setDoctors(list);
             } catch (error) {
                 console.error('Failed to fetch doctors:', error);
+                setDoctors([]);
             } finally {
                 setDoctorsLoading(false);
             }

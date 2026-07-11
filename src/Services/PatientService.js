@@ -5,11 +5,11 @@ export const getDoctors = async (page = 0, size = 10) => {
     const response = await apiClient.get('/api/patient/doctors', {
         params: { page, size }
     });
-    return response.data;
+    return response.data; // { content, totalElements, totalPages, ... }
 };
 
 // 2. Book new appointment (No pagination needed)
-export const bookAppointment = (appointmentData) => 
+export const bookAppointment = (appointmentData) =>
     apiClient.post('/api/patient/appointments/new', appointmentData);
 
 // 3. Get my appointments (PAGINATED)
@@ -17,7 +17,7 @@ export const getMyAppointments = async (page = 0, size = 10) => {
     const response = await apiClient.get('/api/patient/appointments/my', {
         params: { page, size }
     });
-    return response.data;
+    return response.data; // { content, totalElements, totalPages, ... }
 };
 
 // 4. Get my prescriptions (PAGINATED)
@@ -25,15 +25,21 @@ export const getMyPrescriptions = async (page = 0, size = 10) => {
     const response = await apiClient.get('/api/patient/prescriptions', {
         params: { page, size }
     });
-    return response.data;
+    return response.data; // { content, totalElements, totalPages, ... }
 };
 
 // 5. Get my profile (No pagination needed)
-export const getMyProfile = () => apiClient.get('/api/patient/profile');
+// FIX: was returning the raw axios response ({ data, status, headers... }).
+// Now unwraps .data like every other method in this file, so callers
+// don't have to remember "profile is special, do .data.data".
+export const getMyProfile = async () => {
+    const response = await apiClient.get('/api/patient/profile');
+    return response.data; // the profile object itself
+};
 
 // 6. Payments
 export const makePayment = (appointmentId) => apiClient.put(`/api/patient/appointments/${appointmentId}/pay`);
-export const createRazorpayOrder = (appointmentId, amount, currency = 'INR') => 
+export const createRazorpayOrder = (appointmentId, amount, currency = 'INR') =>
     apiClient.post('/api/payments/create-order', { appointmentId, amount, currency });
 export const verifyRazorpayPayment = (payload) => apiClient.post('/api/payments/verify', payload);
 

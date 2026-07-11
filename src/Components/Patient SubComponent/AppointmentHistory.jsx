@@ -13,7 +13,7 @@ const STATUS_STYLES = {
 };
 
 const AppointmentHistory = () => {
-    const [appointments, setAppointments] = useState([]);
+    const [appointments, setAppointments] = useState(null); // Initialize as null to better handle loading state
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState('all');
     const [selectedAppointment, setSelectedAppointment] = useState(null);
@@ -28,7 +28,8 @@ const AppointmentHistory = () => {
         const fetchAppointments = async () => {
             try {
                 const response = await getMyAppointments();
-                setAppointments(response.data);
+                // The service returns the paginated object, so we need its `content` property.
+                setAppointments(response.content || []);
             } catch (error) {
                 console.error('Failed to fetch appointments:', error);
             } finally {
@@ -38,7 +39,8 @@ const AppointmentHistory = () => {
         fetchAppointments();
     }, []);
 
-    const filteredAppointments = appointments.filter(appointment => {
+    // Ensure appointments is an array before filtering
+    const filteredAppointments = (appointments || []).filter(appointment => {
         if (filter === 'all') return true;
         if (filter === 'upcoming') return new Date(appointment.appointmentDate) > new Date();
         if (filter === 'past') return new Date(appointment.appointmentDate) < new Date();
@@ -141,7 +143,7 @@ const AppointmentHistory = () => {
         }
     };
 
-    if (loading) {
+    if (loading || appointments === null) { // Show loading indicator until data is fetched
         return (
             <div className="bg-white rounded-2xl shadow-xl border border-slate-200 p-12">
                 <div className="text-center">
