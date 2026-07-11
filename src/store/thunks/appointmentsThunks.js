@@ -1,50 +1,42 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { setAppointments, setLoading, updateAppointment, addAppointment } from '../slices/appointmentsSlice';
-import { getMyAppointments, updateAppointmentStatus } from '../../Services/DoctorService';
-import { getMyAppointments as getPatientAppointments, bookAppointment } from '../../Services/PatientService';
+import doctorService from '../../Services/DoctorService';
+import patientService from '../../Services/PatientService';
 
-export const fetchDoctorAppointments = createAsyncThunk(
+// 1. Get my appointments as a doctor (PAGINATED)
+export const fetchDoctorAppointmentsThunk = createAsyncThunk(
   'appointments/fetchDoctorAppointments',
-  async (_, { dispatch }) => {
-    dispatch(setLoading(true));
+  async ({ page = 0, size = 10 } = {}, { rejectWithValue }) => {
     try {
-      const response = await getMyAppointments();
-      dispatch(setAppointments(response.data));
-      return response.data;
-    } finally {
-      dispatch(setLoading(false));
+      const data = await doctorService.getMyAppointments(page, size);
+      return data; // Returns Spring Boot Page object
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to fetch doctor appointments');
     }
   }
 );
 
-export const fetchPatientAppointments = createAsyncThunk(
-  'appointments/fetchPatientAppointments',
-  async (_, { dispatch }) => {
-    dispatch(setLoading(true));
-    try {
-      const response = await getPatientAppointments();
-      dispatch(setAppointments(response.data));
-      return response.data;
-    } finally {
-      dispatch(setLoading(false));
-    }
-  }
-);
-
+// 2. Update appointment status (No pagination needed)
 export const updateAppointmentStatusThunk = createAsyncThunk(
   'appointments/updateStatus',
-  async ({ appointmentId, status }, { dispatch }) => {
-    const response = await updateAppointmentStatus(appointmentId, status);
-    dispatch(updateAppointment(response.data));
-    return response.data;
+  async ({ appointmentId, status }, { rejectWithValue }) => {
+    try {
+      const response = await doctorService.updateAppointmentStatus(appointmentId, status);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to update status');
+    }
   }
 );
 
-export const bookAppointmentThunk = createAsyncThunk(
-  'appointments/bookAppointment',
-  async (appointmentData, { dispatch }) => {
-    const response = await bookAppointment(appointmentData);
-    dispatch(addAppointment(response.data));
-    return response.data;
+// 3. Create appointment as a patient (No pagination needed)
+export const createAppointmentThunk = createAsyncThunk(
+  'appointments/create',
+  async (appointmentData, { rejectWithValue }) => {
+    try {
+      const response = await patientService.createAppointment(appointmentData);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to book appointment');
+    }
   }
 );

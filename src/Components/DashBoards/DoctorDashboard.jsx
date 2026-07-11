@@ -9,14 +9,8 @@ import { removeToken, getUserEmail, setupAxiosInterceptors } from "../../Service
 import toast, { Toaster } from 'react-hot-toast';
 // eslint-disable-next-line no-unused-vars
 import { getMyAppointments, updateAppointmentStatus, createPrescription, getMyPatients, getMyPrescriptions, getDoctorProfile, getMyNotifications, getUnreadCount, markNotificationRead, markAllNotificationsRead } from "../../Services/DoctorService.js";
-import { getProfilePictureFromLocal } from "../../Services/ProfileService.js";
 import ProfileSettings from "../ProfileSettings.jsx";
 import logo from "../../assets/OnlyLogo.svg"
-import totalPatient from "../../assets/totalPatient.svg"
-import scheduled from "../../assets/scheduled.svg"
-import completed from "../../assets/completed.svg"
-import pending from "../../assets/pending.svg"
-import today from "../../assets/today.svg"
 
 /* ─────────────────────────────────────────────
    NOTIFICATION BELL
@@ -138,29 +132,48 @@ const DoctorDashboard = () => {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [actionLoading, setActionLoading] = useState({});
 
+    // --- Pagination States ---
+    const [aptPage, setAptPage] = useState(0);
+    const [patPage, setPatPage] = useState(0);
+    const [aptTotalPages, setAptTotalPages] = useState(1);
+    const [patTotalPages, setPatTotalPages] = useState(1);
+    const SIZE = 10;
+
+    // --- Initial Load ---
     useEffect(() => {
         setupAxiosInterceptors();
-        fetchAppointments();
         fetchPrescriptions();
         getDoctorProfile().then(res => setDoctorProfile(res.data)).catch((err) => console.error('getDoctorProfile failed:', err?.response?.status, err?.response?.data));
     }, []);
 
-    useEffect(() => {
-        if (appointments.length > 0) {
-            fetchPatients();
+    // --- Paginated Effects ---
+    useEffect(() => { fetchAppointments(); }, [aptPage]);
+    useEffect(() => { fetchPatients(); }, [patPage]);
+
+    const fetchAppointments = async () => {
+        try {
+            dispatch(setLoading(true));
+            const response = await getMyAppointments(aptPage, SIZE);
+            dispatch(setAppointments(response.data.content || response.data));
+            setAptTotalPages(response.data.totalPages || 1);
+        } catch (error) {
+            console.error('Error fetching appointments:', error);
+        } finally {
+            dispatch(setLoading(false));
         }
-    }, [appointments]);
+    };
 
     const fetchPatients = async () => {
         try {
-            const response = await getMyPatients();
-            dispatch(setPatients(response.data || []));
+            const response = await getMyPatients(patPage, SIZE);
+            dispatch(setPatients(response.data.content || response.data));
+            setPatTotalPages(response.data.totalPages || 1);
         } catch (error) {
             console.error('Error fetching patients:', error);
+            // Fallback unique patient logic
             const completedAppts = appointments.filter(apt => apt.status === 'COMPLETED');
             const uniquePatients = [];
             const seenPatientIds = new Set();
-
             completedAppts.forEach(apt => {
                 if (!seenPatientIds.has(apt.patientId)) {
                     seenPatientIds.add(apt.patientId);
@@ -199,18 +212,6 @@ const DoctorDashboard = () => {
             (prescription.medicationDetails || '').toLowerCase().includes(searchTerm.toLowerCase())
         )
     );
-
-    const fetchAppointments = async () => {
-        try {
-            dispatch(setLoading(true));
-            const response = await getMyAppointments();
-            dispatch(setAppointments(response.data));
-        } catch (error) {
-            console.error('Error fetching appointments:', error);
-        } finally {
-            dispatch(setLoading(false));
-        }
-    };
 
     const handleStatusUpdate = async (appointmentId, newStatus) => {
         setActionLoading(prev => ({ ...prev, [appointmentId]: newStatus }));
@@ -502,7 +503,6 @@ const DoctorDashboard = () => {
                                             <p className="text-2xl font-bold text-slate-800">{stat.val}</p>
                                         </div>
                                         <div className={`w-12 h-12 rounded-full flex items-center justify-center ${stat.bg} ${stat.color}`}>
-                                            {/* Generic placeholder icon - replace with actual SVGs if preferred */}
                                             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
                                         </div>
                                     </div>
@@ -514,7 +514,7 @@ const DoctorDashboard = () => {
                                 <div className="px-6 py-5 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                                     <div>
                                         <h2 className="text-lg font-bold text-slate-800">Recent Appointments</h2>
-                                        <p className="text-sm text-slate-500">Manage today's schedule</p>
+                                        <p className="text-sm text-slate-500">Manage your schedule</p>
                                     </div>
                                     <button
                                         onClick={fetchAppointments}
@@ -540,7 +540,7 @@ const DoctorDashboard = () => {
                                             {loading ? (
                                                 <tr><td colSpan="5" className="px-6 py-12 text-center text-slate-500">Loading appointments...</td></tr>
                                             ) : appointments.length === 0 ? (
-                                                <tr><td colSpan="5" className="px-6 py-12 text-center text-slate-500">No recent appointments found.</td></tr>
+                                                <tr><td colSpan="5" className="px-6 py-12 text-center text-slate-500">No appointments found.</td></tr>
                                             ) : (
                                                 appointments.map((appointment) => (
                                                     <tr key={appointment.id} className="hover:bg-slate-50/50 transition-colors">
@@ -621,6 +621,26 @@ const DoctorDashboard = () => {
                                         </tbody>
                                     </table>
                                 </div>
+                                {/* Appointments Pagination */}
+                                {aptTotalPages > 1 && (
+                                    <div className="px-6 py-4 border-t border-slate-200 bg-slate-50 flex items-center justify-between">
+                                        <button 
+                                            disabled={aptPage === 0} 
+                                            onClick={() => setAptPage(p => p - 1)}
+                                            className="px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium text-slate-700 bg-white hover:bg-slate-50 disabled:opacity-50"
+                                        >
+                                            Previous
+                                        </button>
+                                        <span className="text-sm font-medium text-slate-500">Page {aptPage + 1} of {aptTotalPages}</span>
+                                        <button 
+                                            disabled={aptPage >= aptTotalPages - 1} 
+                                            onClick={() => setAptPage(p => p + 1)}
+                                            className="px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium text-slate-700 bg-white hover:bg-slate-50 disabled:opacity-50"
+                                        >
+                                            Next
+                                        </button>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     ) : activeView === 'appointments' ? (
@@ -672,8 +692,8 @@ const DoctorDashboard = () => {
                                             className="pl-9 pr-4 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full sm:w-64"
                                         />
                                     </div>
-                                    <button onClick={fetchPatients} disabled={loading} className="p-2 bg-white border border-slate-300 rounded-lg text-slate-600 hover:bg-slate-50 transition-colors">
-                                        <svg className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                                    <button onClick={fetchPatients} className="p-2 bg-white border border-slate-300 rounded-lg text-slate-600 hover:bg-slate-50 transition-colors">
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
                                     </button>
                                 </div>
                             </div>
@@ -700,16 +720,36 @@ const DoctorDashboard = () => {
                                         <div className="space-y-2.5 pt-4 border-t border-slate-100">
                                             <div className="flex justify-between text-sm">
                                                 <span className="text-slate-500">Last Visit</span>
-                                                <span className="font-medium text-slate-700">{new Date(patient.appointmentDate).toLocaleDateString()}</span>
+                                                <span className="font-medium text-slate-700">{patient.appointmentDate ? new Date(patient.appointmentDate).toLocaleDateString() : '—'}</span>
                                             </div>
                                             <div className="flex justify-between text-sm">
                                                 <span className="text-slate-500">Total Visits</span>
-                                                <span className="font-medium text-slate-700">{patient.appointmentCount}</span>
+                                                <span className="font-medium text-slate-700">{patient.appointmentCount || 1}</span>
                                             </div>
                                         </div>
                                     </div>
                                 ))}
                             </div>
+                            {/* Patients Pagination */}
+                            {patTotalPages > 1 && (
+                                <div className="mt-6 flex items-center justify-between bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                                    <button 
+                                        disabled={patPage === 0} 
+                                        onClick={() => setPatPage(p => p - 1)}
+                                        className="px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+                                    >
+                                        Previous
+                                    </button>
+                                    <span className="text-sm font-medium text-slate-500">Page {patPage + 1} of {patTotalPages}</span>
+                                    <button 
+                                        disabled={patPage >= patTotalPages - 1} 
+                                        onClick={() => setPatPage(p => p + 1)}
+                                        className="px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+                                    >
+                                        Next
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     ) : activeView === 'prescriptions' ? (
                         <div className="max-w-7xl mx-auto space-y-6">

@@ -1,11 +1,16 @@
 import { createSlice } from '@reduxjs/toolkit';
+import { fetchDoctorsForAdmin, fetchDoctorsForPatients, approveDoctorThunk, rejectDoctorThunk } from '../thunks/doctorsThunks';
 
 const doctorsSlice = createSlice({
   name: 'doctors',
   initialState: {
     list: [],
-    loading: false,
     pendingDoctors: [],
+    currentPage: 0,
+    totalPages: 0,
+    totalElements: 0,
+    loading: false,
+    error: null,
   },
   reducers: {
     setLoading: (state, action) => {
@@ -19,22 +24,60 @@ const doctorsSlice = createSlice({
     },
     approveDoctor: (state, action) => {
       const doctorId = action.payload;
-      const doctorIndex = state.list.findIndex(doc => doc.id === doctorId);
-      if (doctorIndex !== -1) {
-        state.list[doctorIndex].isApproved = true;
-        state.list[doctorIndex].status = 'APPROVED';
+      const doctor = state.list.find(doc => doc.id === doctorId);
+      if (doctor) {
+        doctor.isApproved = true;
       }
     },
     rejectDoctor: (state, action) => {
       const doctorId = action.payload;
-      const doctorIndex = state.list.findIndex(doc => doc.id === doctorId);
-      if (doctorIndex !== -1) {
-        state.list[doctorIndex].isApproved = false;
-        state.list[doctorIndex].status = 'REJECTED';
+      const doctor = state.list.find(doc => doc.id === doctorId);
+      if (doctor) {
+        doctor.isApproved = false;
       }
     },
   },
+  extraReducers: (builder) => {
+    builder
+      // Fetch Admin Doctors Handle
+      .addCase(fetchDoctorsForAdmin.pending, (state) => { state.loading = true; })
+      .addCase(fetchDoctorsForAdmin.fulfilled, (state, action) => {
+        state.loading = false;
+        state.list = action.payload.content; // 'content' Spring Boot se aa raha hai
+        state.currentPage = action.payload.number;
+        state.totalPages = action.payload.totalPages;
+        state.totalElements = action.payload.totalElements;
+      })
+      .addCase(fetchDoctorsForAdmin.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      
+      // Fetch Doctors For Patients
+      .addCase(fetchDoctorsForPatients.fulfilled, (state, action) => {
+        state.loading = false;
+        state.list = action.payload.content;
+        state.currentPage = action.payload.number;
+        state.totalPages = action.payload.totalPages;
+      })
+
+      // Approve Doctor Handle
+      .addCase(approveDoctorThunk.fulfilled, (state, action) => {
+        const doctorId = action.payload;
+        const doctor = state.list.find(doc => doc.id === doctorId);
+        if (doctor) doctor.isApproved = true;
+      })
+
+      // Reject Doctor Handle
+      .addCase(rejectDoctorThunk.fulfilled, (state, action) => {
+        const doctorId = action.payload;
+        const doctor = state.list.find(doc => doc.id === doctorId);
+        if (doctor) doctor.isApproved = false;
+      });
+  }
 });
 
-export const { setLoading, setDoctors, setPendingDoctors, approveDoctor, rejectDoctor } = doctorsSlice.actions;
+// Yahan se saare actions export kar diye hain
+export const { setDoctors, setPendingDoctors, setLoading, approveDoctor, rejectDoctor } = doctorsSlice.actions;
+
 export default doctorsSlice.reducer;

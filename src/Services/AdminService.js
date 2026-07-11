@@ -1,23 +1,51 @@
 import apiClient from '../API/apiClient';
 
-// Get all doctors
-export const getDoctors = () => apiClient.get('/api/admin/doctors');
+// 1. Get all doctors (UPDATED WITH PAGINATION)
+export const getDoctors = async (page = 0, size = 10) => {
+    const response = await apiClient.get('/api/admin/doctors', {
+        params: { page, size }
+    });
+    return response.data;
+};
 
-// Approve doctor
+// Approve doctor (No pagination needed)
 export const approveDoctor = (id) => apiClient.put(`/api/admin/doctors/${id}/approve`);
 
-// Reject doctor
+// Reject doctor (No pagination needed)
 export const rejectDoctor = (id) => apiClient.put(`/api/admin/doctors/${id}/reject`);
 
-// Get all patients
-export const getPatients = () => apiClient.get('/api/admin/patients');
+// 2. Get all patients (UPDATED WITH PAGINATION)
+export const getPatients = async (page = 0, size = 10) => {
+    const response = await apiClient.get('/api/admin/patients', {
+        params: { page, size }
+    });
+    return response.data;
+};
 
-// Get all billing records
-export const getBilling = () => apiClient.get('/api/admin/billing');
+// 3. Get all billing records (UPDATED WITH PAGINATION)
+export const getBilling = async (page = 0, size = 10) => {
+    const response = await apiClient.get('/api/admin/billing', {
+        params: { page, size }
+    });
+    return response.data;
+};
 
-// Update billing status
+// Update billing status (No pagination needed)
 export const updateBillingStatus = (id, status) => apiClient.put(`/api/admin/billing/${id}/status`, status);
 
-// Get revenue stats
+// Get revenue stats (No pagination needed, returns a single number)
 export const getDailyRevenue = () => apiClient.get('/api/admin/revenue/daily');
 export const getMonthlyRevenue = () => apiClient.get('/api/admin/revenue/monthly');
+
+const adminService = {
+    getDoctors,
+    approveDoctor,
+    rejectDoctor,
+    getPatients,
+    getBilling,
+    updateBillingStatus,
+    getDailyRevenue,
+    getMonthlyRevenue
+};
+
+export default adminService;
