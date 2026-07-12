@@ -154,16 +154,18 @@ const DashboardHome = () => {
         const fetchData = async () => {
             setLoading(true);
             try {
-                // size big enough to reliably compute "next upcoming" client-side;
-                // totalAppointments still comes from totalElements, not this array's length.
                 const [apt, prof] = await Promise.all([
                     getMyAppointments(0, 100),
                     getMyProfile(),
                 ]);
                 if (cancelled) return;
-                setAppointments(apt.content || []);
-                setTotalAppointments(apt.totalElements ?? (apt.content || []).length);
-                setProfile(prof);
+                // Handle both shapes: a paginated Page object ({content, totalElements})
+                // or a plain array (if that endpoint isn't paginated on your backend yet).
+                const aptList = Array.isArray(apt) ? apt : (apt.content || []);
+                const aptTotal = Array.isArray(apt) ? apt.length : (apt.totalElements ?? aptList.length);
+                setAppointments(aptList);
+                setTotalAppointments(aptTotal);
+                setProfile(prof.data); // getMyProfile() is a raw axios response — use .data, not prof itself
                 setError(null);
             } catch (err) {
                 if (cancelled) return;

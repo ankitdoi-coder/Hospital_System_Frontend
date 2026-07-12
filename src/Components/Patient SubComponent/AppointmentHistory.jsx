@@ -27,9 +27,13 @@ const AppointmentHistory = () => {
         setupAxiosInterceptors();
         const fetchAppointments = async () => {
             try {
-                const response = await getMyAppointments();
-                // The service returns the paginated object, so we need its `content` property.
-                setAppointments(response.content || []);
+                // This page filters client-side across all statuses/dates, so pull a
+                // large page rather than the default 10 — otherwise anything past the
+                // first 10 appointments silently disappears from every filter.
+                const response = await getMyAppointments(0, 100);
+                // Handle both shapes: a paginated Page object ({content: [...]})
+                // or a plain array (if this endpoint isn't paginated on your backend).
+                setAppointments(Array.isArray(response) ? response : (response.content || []));
             } catch (error) {
                 console.error('Failed to fetch appointments:', error);
             } finally {
@@ -174,11 +178,10 @@ const AppointmentHistory = () => {
                         <button
                             key={filterOption}
                             onClick={() => setFilter(filterOption)}
-                            className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200 ${
-                                filter === filterOption
-                                    ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg'
-                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:shadow-md'
-                            }`}
+                            className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200 ${filter === filterOption
+                                ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg'
+                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:shadow-md'
+                                }`}
                         >
                             {filterOption.charAt(0).toUpperCase() + filterOption.slice(1)}
                         </button>
@@ -252,9 +255,8 @@ const AppointmentHistory = () => {
                                             </td>
                                             <td className="px-6 py-4">
                                                 <div className="flex items-center gap-2">
-                                                    <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold ${
-                                                        isPaid ? 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200' : 'bg-rose-50 text-rose-700 ring-1 ring-rose-200'
-                                                    }`}>
+                                                    <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold ${isPaid ? 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200' : 'bg-rose-50 text-rose-700 ring-1 ring-rose-200'
+                                                        }`}>
                                                         <span className={`w-1.5 h-1.5 rounded-full ${isPaid ? 'bg-emerald-500' : 'bg-rose-500'}`} />
                                                         {isPaid ? 'Paid' : 'Unpaid'}
                                                     </span>
