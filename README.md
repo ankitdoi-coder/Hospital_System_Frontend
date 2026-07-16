@@ -30,22 +30,30 @@ Designed to demonstrate end-to-end Java Full Stack development — from JWT-secu
 
 | Layer | Technology | What Was Built |
 |---|---|---|
-| 🧩 **Backend** | Spring Boot 3 | RESTful APIs with full CRUD for Patients, Doctors, Appointments, Prescriptions, Billing |
+| 🧩 **Backend** | Spring Boot 3 | RESTful APIs with full CRUD for Patients, Doctors, Appointments, Prescriptions, Billing, Contact Us Enquiries |
 | 🔐 **Security** | Spring Security + JWT | Stateless auth, role-based access control (PATIENT / DOCTOR / ADMIN) |
 | 🌐 **OAuth2** | Google OAuth2 + Spring Security | Social login with token redirect handling on the frontend |
 | 💳 **Payments** | Razorpay Checkout + Server Verification | Real UPI/Card/Netbanking payments with HMAC signature verification before billing status changes |
 | 🗄️ **Database** | MySQL + JPA/Hibernate | Normalized relational schema, entity relationships, lazy loading |
+| 📄 **Pagination** | Spring Data `Pageable` + React page state | Server-side paginated list views across Admin, Doctor, and Patient panels instead of full-table fetches |
 | 📚 **API Docs** | SpringDoc OpenAPI / Swagger UI | Self-documenting REST API at `/swagger-ui/index.html` |
 | 🎨 **Frontend** | React 19 + Vite | Component-based SPA consuming all backend APIs |
 | 🧠 **State** | Redux Toolkit | Centralized store: auth, appointments, doctors, patients, prescriptions |
 | 📡 **HTTP Layer** | Axios + Interceptors | Auto JWT injection, 401/403 handling, token refresh detection |
 | 🧭 **Routing** | React Router v7 | Role-protected routes, redirect-after-login, 404/401 handling |
-| 📝 **Forms** | React Hook Form | Validated forms for login, register, appointments, prescriptions |
+| 📝 **Forms** | React Hook Form | Validated forms for login, register, appointments, prescriptions, Contact Us |
 | ✨ **UX** | Tailwind CSS v4 + Framer Motion | Responsive UI with smooth animations |
 
 ---
 
 ## ✨ Features
+
+### ⚡ Pagination
+- **Admin Panel** — Doctors table, Patients table, Billing records list, and Contact Us Enquiries list are all **paginated**, with Next/Previous controls driving page state independently per tab instead of loading the entire dataset up front
+- **Patient Panel** — the Find Doctors directory and My Appointments history are both **paginated**, backed by `getDoctors(page, size)` and `getMyAppointments(page, size)`
+- **Doctor Panel** — the Appointments list is **paginated**, backed by `getMyAppointments(page, size)`, with page controls alongside the existing manual Refresh action
+- All paginated endpoints return a Spring Data `Page<T>` shape (`content`, `totalElements`, `totalPages`, ...), and each panel's page/size state is kept independent per list so switching tabs or filters doesn't reset unrelated pagination
+- Designed to keep initial load times low and payloads small as the number of doctors, patients, appointments, billing records, and enquiries grows
 
 ### 🔑 Authentication & Security
 - **JWT-based stateless login** — credentials sent to `/api/auth/login`, token decoded client-side for role & expiry
@@ -66,17 +74,18 @@ Designed to demonstrate end-to-end Java Full Stack development — from JWT-secu
 
 ### 🧑‍⚕️ Patient Portal
 - Dashboard with personal profile and upcoming appointment summary
-- Browse and search doctors by specialty or name
+- Browse and search doctors by specialty or name — **paginated** doctor directory instead of loading the entire list upfront
 - Book new appointments from available time slots
-- View full appointment history with status (SCHEDULED / COMPLETED / CANCELLED) and payment status (PAID / UNPAID)
+- View full appointment history with status (SCHEDULED / COMPLETED / CANCELLED) and payment status (PAID / UNPAID) — **paginated**, backed by `getMyAppointments(page, size)`
 - Pay for appointments directly from the appointment history table via Razorpay
 - Access prescriptions linked to completed appointments — each prescription shows medication details and dosage instructions
 - **Professional prescription print / download** — Print button opens a styled A4 prescription slip in a new tab with clinic letterhead, doctor name, patient info, Rx symbol, medication table, and signature block; the browser print dialog opens automatically so the patient can print or save as PDF instantly
 - Profile picture upload and profile settings management
+- **Contact Us form** — public enquiry form (name, email, subject, message) that lands directly in the Admin panel's Enquiries tab for follow-up
 
 ### 👨‍⚕️ Doctor Portal
 - **Live stats dashboard** — Total, Scheduled, Completed, Pending, and Today's appointment counts driven from Redux state via memoized selectors (`selectTodayAppointments`, `selectScheduledAppointments`, `selectCompletedAppointments`, `selectPendingAppointments`)
-- **Real-time appointment list** — `getMyAppointments()` fires on mount and dispatches to Redux; a manual **Refresh** button re-fetches live data from the backend without a page reload, with a loading spinner state
+- **Real-time, paginated appointment list** — `getMyAppointments(page, size)` fires on mount and page change and dispatches to Redux; Next/Previous controls fetch fresh pages from the backend (`Page<AppointmentDTO>`) instead of loading the full dataset, alongside a manual **Refresh** button that re-fetches the current page with a loading spinner state
 - **Full appointment context per row** — each appointment displays patient name, date, **preferred time** (formatted to 12-hr from the `appointmentTime` field), and **reason for visit** (`reasonForVisit`) so the doctor has complete context before the consultation starts
 - **Appointment workflow actions** — Accept (PENDING → SCHEDULED), Complete (SCHEDULED → COMPLETED), Cancel; each action calls `updateAppointmentStatus` and dispatches `updateAppointment` to Redux for instant UI sync without a re-fetch
 - **Appointments Calendar view** — monthly calendar with green dot indicators on days that have appointments, with prev/next month navigation
@@ -89,10 +98,14 @@ Designed to demonstrate end-to-end Java Full Stack development — from JWT-secu
 - **Responsive sidebar** — collapses to a hamburger menu on mobile with an overlay backdrop
 
 ### 🛠️ Admin Portal
-- View all registered doctors including those with pending approval
+- View all registered doctors including those with pending approval — **paginated** table (page/size controls, no full-table fetch)
 - Approve new doctor registrations to grant system access
-- View and manage all registered patients
-- View billing records and daily/monthly revenue collected via Razorpay
+- View and manage all registered patients — **paginated**, same page-by-page loading as the doctors table
+- View billing records and daily/monthly revenue collected via Razorpay — billing list is **paginated** to keep initial load light
+- <img src="/enquire.svg" width="16" height="16" alt="" /> **Contact Us Enquiries** — a dedicated, **paginated** tab (`getEnquries(page, size)`) listing every message submitted through the public Contact Us form, with an unread-style count badge on the sidebar nav item
+  - Each row shows the sender's name, email, and subject at a glance, with the message **clamped to two lines** so row height stays consistent regardless of message length
+  - A **View** button opens the full enquiry (name, email, subject, and complete message) in a modal, so long messages never break the table layout
+  - The message body is rendered as plain text (never injected as HTML), so pasted links or markup in a submission can't be auto-linkified or executed
 
 ### 🌍 Public Landing Pages
 - Home, About Us, Services, Appointment Info, Contact Us
@@ -108,29 +121,31 @@ src/
 ├── API/                    # Axios instance & config (baseURL from .env)
 ├── Services/               # Service layer — one file per domain
 │   ├── AuthService.js      # JWT decode, token management, axios interceptors
-│   ├── PatientService.js   # Appointments, doctors, prescriptions, Razorpay order/verify calls
-│   ├── DoctorService.js    # Appointments, patients, prescriptions, notifications
-│   ├── AdminService.js
+│   ├── PatientService.js   # Appointments, doctors, prescriptions, Razorpay order/verify calls (paginated list calls take page/size)
+│   ├── DoctorService.js    # Appointments, patients, prescriptions, notifications (paginated appointment list)
+│   ├── AdminService.js     # Doctors, patients, billing, enquiries (all paginated list endpoints, incl. getEnquries)
 │   └── ProfileService.js
 ├── store/                  # Redux Toolkit store
 │   ├── slices/             # authSlice, appointmentsSlice, doctorsSlice, patientsSlice, prescriptionsSlice
 │   ├── thunks/             # Async thunks for API calls
 │   └── selectors/          # Memoized selectors for derived state
 ├── Components/
-│   ├── DashBoards/         # PatientDashboard, DoctorDashboard, AdminDashboard, ProtectedRoute
-│   ├── Landing_Pages_Components/   # Home, Login, Register, ForgotPassword, ResetPassword, OAuth2RedirectHandler
-│   └── Patient SubComponent/       # AppointmentHistory (incl. Razorpay payment modal), DoctorsList, NewAppointment
+│   ├── DashBoards/         # PatientDashboard, DoctorDashboard, AdminDashboard (incl. Enquiries tab + details modal), ProtectedRoute — each owns its own page/size state per list
+│   ├── Landing_Pages_Components/   # Home, Login, Register, ForgotPassword, ResetPassword, OAuth2RedirectHandler, Contact Us
+│   └── Patient SubComponent/       # AppointmentHistory (incl. Razorpay payment modal, paginated), DoctorsList (paginated), NewAppointment
 └── App.jsx                 # Router config with role-based protected routes
 ```
 
 **Key architectural decisions:**
-- **Service Layer Pattern** — mirrors the backend `@Service` layer; each domain has its own service file wrapping Axios calls, including Razorpay order-creation and verification
+- **Service Layer Pattern** — mirrors the backend `@Service` layer; each domain has its own service file wrapping Axios calls, including Razorpay order-creation/verification and paginated list requests (`page`, `size` query params)
 - **Redux Slices** — separate slices per entity, matching backend entity structure (Appointment, Doctor, Patient, Prescription)
 - **Memoized Selectors** — `selectTodayAppointments`, `selectScheduledAppointments`, `selectCompletedAppointments`, `selectPendingAppointments` compute derived state without unnecessary re-renders
 - **Thunks for Async** — all API calls live in thunks, keeping components clean and testable
 - **ProtectedRoute HOC** — declarative route guarding with `allowedRoles` prop, mirrors Spring Security's `@PreAuthorize`
 - **Optimistic UI + graceful fallback** — patient list attempts a dedicated API call; on failure, derives the list from existing appointment data already in Redux state
 - **Client never owns payment truth** — the payment modal only ever reflects what the backend confirms after signature verification; no UI state change marks something "paid" on its own
+- **Page state owned per list, per panel** — each paginated table/list (Admin Doctors, Admin Patients, Admin Billing, Admin Enquiries, Patient Doctor Directory, Patient Appointment History, Doctor Appointments) tracks its own current page and total pages locally, so navigating one list's pages never resets another
+- **Long content never breaks table layout** — the Admin Enquiries table clamps message text to a fixed number of lines and defers full content to an on-demand modal, keeping row heights predictable regardless of message length
 
 ---
 
@@ -176,6 +191,7 @@ src/
 | Social Auth | OAuth2 (Google) | — |
 | ORM | JPA / Hibernate | — |
 | Database | MySQL | 8.x |
+| Pagination | Spring Data `Pageable` / `Page<T>` | — |
 | API Docs | SpringDoc OpenAPI / Swagger | — |
 
 ---
@@ -227,6 +243,30 @@ Patient                Frontend                Backend                 Razorpay
 
 ---
 
+## 📄 Pagination Flow
+
+```
+Component (page, size state)          Service Layer                    Backend
+        │                                   │                              │
+        │── getDoctors(page, size) ────────►│                              │
+        │                                   │── GET /api/.../doctors ─────►│
+        │                                   │   ?page=0&size=10            │ PageRequest.of(page, size)
+        │                                   │◄── Page<DoctorDTO> ──────────│ repo.findAll(pageable)
+        │◄── { content, totalElements, ─────│   { content, totalElements,  │
+        │      totalPages, ... } }          │     totalPages, ... }        │
+        │                                   │                              │
+        │  setDoctors(response.content)                                   │
+        │  setTotalPages(response.totalPages)                             │
+        │                                                                  │
+        │── user clicks Next → setPage(page + 1) ─── re-fetches ─────────►│
+```
+
+- Every paginated list component keeps its own `page` and `totalPages` state, independent of any other list on the same screen
+- Next/Previous controls are disabled at the first/last page based on `totalPages` from the response, not guessed client-side
+- Page size defaults to `10` per list unless a component needs a larger working set for client-side filtering (e.g. status filters on appointment history), in which case a larger `size` is requested explicitly rather than paginating through multiple calls
+
+---
+
 ## 🗄️ Database Schema
 
 The backend uses a normalized relational schema with JPA entity relationships.
@@ -245,6 +285,7 @@ The backend uses a normalized relational schema with JPA entity relationships.
 | 📅 Appointment | ![Appointment](./ScreenShots/Appointment.jpg) |
 | ℹ️ About Us | ![About](./ScreenShots/AboutUs.jpg) |
 | 🩺 Services | ![Services](./ScreenShots/Services.jpg) |
+| 📨 Admin — Enquiries | <img src="/enquire.svg" width="20" height="20" alt="Enquiries icon" /> |
 
 ---
 
@@ -304,7 +345,7 @@ VITE_API_BASE_URL=http://localhost:8080
 http://localhost:8080/swagger-ui/index.html
 ```
 
-Covers: Auth, Patient, Doctor, Admin, Appointment, Prescription, and Payment endpoints with request/response schemas.
+Covers: Auth, Patient, Doctor, Admin, Appointment, Prescription, Enquiry, and Payment endpoints with request/response schemas, including `page`/`size` query parameters on all paginated list endpoints.
 
 ---
 
@@ -325,7 +366,7 @@ Figma wireframes available in `WireFrames & Figma UI's/`:
 [![GitHub](https://img.shields.io/badge/GitHub-ankitdoi--coder-181717?style=flat-square&logo=github&logoColor=white)](https://github.com/ankitdoi-coder)
 
 - Built and owned the complete stack: Spring Boot backend + React frontend
-- Implemented end-to-end features: JWT auth, OAuth2 Google login, role-based access, full CRUD APIs, relational DB schema, and a verified Razorpay payment integration
-- Followed industry patterns: Service Layer, Repository Pattern, Redux Thunks, Protected Routes, Axios Interceptors, server-side payment trust boundaries
+- Implemented end-to-end features: JWT auth, OAuth2 Google login, role-based access, full CRUD APIs, relational DB schema, server-side pagination across every major list view, a Contact Us → Admin Enquiries pipeline, and a verified Razorpay payment integration
+- Followed industry patterns: Service Layer, Repository Pattern, Redux Thunks, Protected Routes, Axios Interceptors, server-side payment trust boundaries, and paginated data-fetching patterns (`Pageable` on the backend, page/size state on the frontend)
 
 > 💼 Open to Java Full Stack / Backend / Frontend opportunities. Feel free to connect!

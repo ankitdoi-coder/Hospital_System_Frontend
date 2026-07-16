@@ -3,11 +3,15 @@ import apiClient from '../API/apiClient';
 // ==================== API CALLS ====================
 
 // For Registering the user
-export const RegisterUser = (registerData) => 
+export const RegisterUser = (registerData) =>
     apiClient.post('/api/auth/register', registerData);
 
+export const logout = () => {
+    // Interceptor will automatically add the Bearer token!
+    return apiClient.post('/api/auth/logout');
+};
 // For Logging in the user
-export const LoginUser = (loginData) => 
+export const LoginUser = (loginData) =>
     apiClient.post('/api/auth/login', loginData);
 
 // For Sending OTP
@@ -19,7 +23,7 @@ export const verifyOtp = (email, otp) =>
     apiClient.post('/api/auth/verify-otp', { email, otp });
 
 // For Forgot Password
-export const forgotPassword = (email) => 
+export const forgotPassword = (email) =>
     apiClient.post('/api/auth/forgot-password', { email });
 
 // Verify reset token with backend
@@ -36,7 +40,7 @@ export const verifyResetToken = async (email, token) => {
 };
 
 // For Reset Password
-export const resetPassword = (token, newPassword) => 
+export const resetPassword = (token, newPassword) =>
     apiClient.post('/api/auth/reset-password', { token, newPassword });
 
 // ==================== TOKEN MANAGEMENT ====================
@@ -64,18 +68,18 @@ export const removeToken = () => {
 export const isAuthenticated = () => {
     const token = getToken();
     if (!token) return false;
-    
+
     try {
         // Check if token is expired
         const payload = JSON.parse(atob(token.split('.')[1]));
         const expiry = payload.exp * 1000; // Convert to milliseconds
         const isValid = Date.now() < expiry;
-        
+
         if (!isValid) {
-           // console.warn('⚠️ Token expired');
+            // console.warn('⚠️ Token expired');
             removeToken();
         }
-        
+
         return isValid;
     } catch (error) {
         //console.error('❌ Error checking token validity:', error);
@@ -89,20 +93,20 @@ export const isAuthenticated = () => {
 export const getUserRole = () => {
     const token = getToken();
     if (!token) return null;
-    
+
     try {
         const payload = JSON.parse(atob(token.split('.')[1]));
-        
+
         // Handle different JWT structures
         // Your backend might use 'authorities', 'roles', or 'role'
         const authorities = payload.authorities || payload.roles || payload.role;
-        
+
         if (Array.isArray(authorities)) {
             return authorities[0]; // Return first role
         } else if (typeof authorities === 'string') {
             return authorities;
         }
-        
+
         return null;
     } catch (error) {
         //console.error('Error decoding token:', error);
@@ -114,12 +118,12 @@ export const getUserRole = () => {
 export const getUserEmail = () => {
     const token = getToken();
     if (!token) return null;
-    
+
     try {
         const payload = JSON.parse(atob(token.split('.')[1]));
         return payload.sub || payload.email || payload.username;
     } catch (error) {
-       // console.error('Error decoding token:', error);
+        // console.error('Error decoding token:', error);
         return null;
     }
 };
@@ -144,21 +148,21 @@ export const setupAxiosInterceptors = () => {
     }
 
     //console.log('⚙️ Setting up axios interceptors...');
-    
+
     // Request interceptor - Add token to headers
     apiClient.interceptors.request.use(
         (config) => {
             const token = getToken();
             if (token) {
                 config.headers.Authorization = `Bearer ${token}`;
-               // console.log('🔐 Token added to request:', config.url);
+                // console.log('🔐 Token added to request:', config.url);
             } else {
                 //console.warn('⚠️ No token found for request:', config.url);
             }
             return config;
         },
         (error) => {
-           // console.error('❌ Request interceptor error:', error);
+            // console.error('❌ Request interceptor error:', error);
             return Promise.reject(error);
         }
     );
@@ -171,68 +175,68 @@ export const setupAxiosInterceptors = () => {
             if (newToken) {
                 const cleanToken = newToken.replace('Bearer ', '');
                 saveToken(cleanToken);
-              //  console.log('🔄 Token refreshed from backend');
+                //  console.log('🔄 Token refreshed from backend');
             }
             return response;
         },
         (error) => {
             if (error.response) {
                 const status = error.response.status;
-                
+
                 if (status === 401) {
                     // console.error('❌ 401 Unauthorized - Token invalid or expired');
-                    
+
                     // Prevent multiple simultaneous redirects
                     if (!isRedirecting) {
                         isRedirecting = true;
-                        
+
                         // Clear token
                         removeToken();
-                        
+
                         // Show user-friendly message
-                        const message = error.response.data?.message || 
-                                      'Your session has expired. Please login again.';
-                        
+                        const message = error.response.data?.message ||
+                            'Your session has expired. Please login again.';
+
                         // Store current path to redirect back after login
                         const currentPath = window.location.pathname;
                         if (currentPath !== '/login') {
                             sessionStorage.setItem('redirectAfterLogin', currentPath);
                         }
-                        
+
                         // Show alert and redirect
                         setTimeout(() => {
                             // console.log(message);
-                            
+
                             window.location.href = '/login';
                         }, 100);
-                        
+
                         // Reset redirect flag after 2 seconds
                         setTimeout(() => {
                             isRedirecting = false;
                         }, 2000);
                     }
                 } else if (status === 403) {
-                 //   console.error('❌ 403 Forbidden - Access denied');
-                   // console.error('Response:', error.response.data);
-                    
+                    //   console.error('❌ 403 Forbidden - Access denied');
+                    // console.error('Response:', error.response.data);
+
                     // Don't redirect for 403, just show error
-                    const message = error.response.data?.message || 
-                                  'You do not have permission to access this resource.';
+                    const message = error.response.data?.message ||
+                        'You do not have permission to access this resource.';
                     console.error(message);
-                    
+
                 }
             } else if (error.message === 'Token expired') {
                 // This is from our request interceptor
-               // console.log('🔄 Token expired, already handling redirect');
+                // console.log('🔄 Token expired, already handling redirect');
             } else {
-               // console.error('❌ Network or other error:', error.message);
+                // console.error('❌ Network or other error:', error.message);
             }
             return Promise.reject(error);
         }
     );
 
     interceptorsSetup = true;
-   // console.log('✅ Axios interceptors set up successfully');
+    // console.log('✅ Axios interceptors set up successfully');
 };
 
 // Reset interceptors (useful for testing)
@@ -241,7 +245,7 @@ export const resetInterceptors = () => {
     isRedirecting = false;
     apiClient.interceptors.request.clear();
     apiClient.interceptors.response.clear();
-  //  console.log('🔄 Interceptors reset');
+    //  console.log('🔄 Interceptors reset');
 };
 
 // ==================== NAVIGATION HELPERS ====================
@@ -249,9 +253,9 @@ export const resetInterceptors = () => {
 // Get dashboard URL based on user role
 export const getDashboardRoute = () => {
     const role = getUserRole();
-    
+
     if (!role) return '/login';
-    
+
     if (role.includes('ROLE_PATIENT') || role.includes('PATIENT')) {
         return '/patient';
     } else if (role.includes('ROLE_DOCTOR') || role.includes('DOCTOR')) {
@@ -259,7 +263,7 @@ export const getDashboardRoute = () => {
     } else if (role.includes('ROLE_ADMIN') || role.includes('ADMIN')) {
         return '/admin/dashboard';
     }
-    
+
     return '/dashboard'; // Default
 };
 
@@ -269,7 +273,7 @@ export const getDashboardRoute = () => {
 export const getUserInfo = () => {
     const token = getToken();
     if (!token) return null;
-    
+
     try {
         const payload = JSON.parse(atob(token.split('.')[1]));
         return {
@@ -280,7 +284,7 @@ export const getUserInfo = () => {
             expiresIn: payload.exp ? (payload.exp * 1000 - Date.now()) / 1000 : null // seconds until expiry
         };
     } catch (error) {
-     //   console.error('Error decoding token:', error);
+        //   console.error('Error decoding token:', error);
         return null;
     }
 };
@@ -291,25 +295,25 @@ export const getUserInfo = () => {
 export const startTokenExpiryMonitor = (callback) => {
     const checkInterval = setInterval(() => {
         const userInfo = getUserInfo();
-        
+
         if (!userInfo) {
             clearInterval(checkInterval);
             return;
         }
-        
+
         const expiresIn = userInfo.expiresIn;
-        
+
         // Warn user 5 minutes before token expires
         if (expiresIn && expiresIn < 300 && expiresIn > 0) {
-           // console.warn('⚠️ Token expiring soon:', Math.floor(expiresIn), 'seconds');
+            // console.warn('⚠️ Token expiring soon:', Math.floor(expiresIn), 'seconds');
             if (callback) {
                 callback(Math.floor(expiresIn));
             }
         }
-        
+
         // Token has expired
         if (expiresIn && expiresIn <= 0) {
-          //  console.error('❌ Token has expired');
+            //  console.error('❌ Token has expired');
             clearInterval(checkInterval);
             if (!isRedirecting) {
                 removeToken();
@@ -317,6 +321,6 @@ export const startTokenExpiryMonitor = (callback) => {
             }
         }
     }, 60000); // Check every minute
-    
+
     return checkInterval;
 };

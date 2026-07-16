@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { removeToken, getUserEmail, isAuthenticated, setupAxiosInterceptors } from "../../Services/AuthService.js";
-import { getDoctors, approveDoctor, rejectDoctor, getPatients, getBilling, updateBillingStatus, getDailyRevenue, getMonthlyRevenue } from "../../Services/AdminService.js";
+import { getDoctors, approveDoctor, rejectDoctor, getPatients, getBilling, updateBillingStatus, getDailyRevenue, getMonthlyRevenue, getEnquries } from "../../Services/AdminService.js";
 import logo from "../../assets/OnlyLogo.svg";
+import enq from "/enq.svg";
 
 const NAV_ITEMS = [
     {
@@ -11,11 +12,15 @@ const NAV_ITEMS = [
     },
     {
         id: 'patients', label: 'Patients',
-        icon: <svg width={17} height={17} fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM2 8a2 2 0 114 0A2 2 0 012 8zm16.293 8A6 6 0 0010 12a6 6 0 00-8.293 4H18.293z" clipRule="evenodd" /></svg>,
+        icon: <svg width={17} height={17} fill="currentColor" viewBox="0 20 20"><path fillRule="evenodd" d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM2 8a2 2 0 114 0A2 2 0 012 8zm16.293 8A6 6 0 0010 12a6 6 0 00-8.293 4H18.293z" clipRule="evenodd" /></svg>,
     },
     {
         id: 'billing', label: 'Billing',
         icon: <svg width={17} height={17} fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" /></svg>,
+    },
+    {
+        id: 'enquries', label: 'Enquries',
+        icon: <img width={17} height={17} fill="currentColor" viewBox="0 0 20 20" src={enq} alt="" />,
     },
 ];
 
@@ -36,6 +41,8 @@ const AdminDashboard = () => {
     const [doctorsLoading, setDoctorsLoading] = useState(true);
     const [patientsLoading, setPatientsLoading] = useState(false);
     const [billing, setBilling] = useState([]);
+    const [enquiries, setEnquiries] = useState([]);
+    const [enquiriesLoading, setEnquiriesLoading] = useState(false);
     const [dailyRevenue, setDailyRevenue] = useState(0);
     const [monthlyRevenue, setMonthlyRevenue] = useState(0);
     const [activeTab, setActiveTab] = useState('doctors');
@@ -45,14 +52,20 @@ const AdminDashboard = () => {
     const [docPage, setDocPage] = useState(0);
     const [patPage, setPatPage] = useState(0);
     const [billPage, setBillPage] = useState(0);
+    const [enqPage, setEnqPage] = useState(0);
 
     const [docTotalPages, setDocTotalPages] = useState(1);
     const [patTotalPages, setPatTotalPages] = useState(1);
     const [billTotalPages, setBillTotalPages] = useState(1);
+    const [enqTotalPages, setEnqTotalPages] = useState(1);
     const SIZE = 10;
 
+    // Full enquiry currently open in the details modal (null = closed).
+    const [viewEnquiry, setViewEnquiry] = useState(null);
+
     const loading = activeTab === 'doctors' ? doctorsLoading
-        : activeTab === 'patients' ? patientsLoading : false;
+        : activeTab === 'patients' ? patientsLoading
+        : activeTab === 'enquries' ? enquiriesLoading : false;
 
     const handleLogout = useCallback(() => {
         removeToken(); navigate('/login', { replace: true });
@@ -95,6 +108,16 @@ const AdminDashboard = () => {
         } catch { }
     }, [billPage]);
 
+    const fetchEnquiries = useCallback(async () => {
+        try {
+            setEnquiriesLoading(true);
+            const r = await getEnquries(enqPage, SIZE);
+            const { list, totalPages } = normalizePage(r);
+            setEnquiries(list);
+            setEnqTotalPages(totalPages);
+        } catch { } finally { setEnquiriesLoading(false); }
+    }, [enqPage]);
+
     const fetchRevenue = useCallback(async () => {
         try {
             const [daily, monthly] = await Promise.all([getDailyRevenue(), getMonthlyRevenue()]);
@@ -112,6 +135,15 @@ const AdminDashboard = () => {
     useEffect(() => { fetchDoctors(); }, [fetchDoctors]);
     useEffect(() => { fetchPatients(); }, [fetchPatients]);
     useEffect(() => { fetchBilling(); }, [fetchBilling]);
+    useEffect(() => { fetchEnquiries(); }, [fetchEnquiries]);
+
+    // Close the enquiry modal with the Escape key.
+    useEffect(() => {
+        if (!viewEnquiry) return;
+        const onKey = (e) => { if (e.key === 'Escape') setViewEnquiry(null); };
+        document.addEventListener('keydown', onKey);
+        return () => document.removeEventListener('keydown', onKey);
+    }, [viewEnquiry]);
 
     const showNotification = (message, type) => {
         const el = document.createElement('div');
@@ -162,14 +194,17 @@ const AdminDashboard = () => {
 
     const refreshCurrent = () =>
         activeTab === 'doctors' ? fetchDoctors() :
-            activeTab === 'patients' ? fetchPatients() : fetchBilling();
+            activeTab === 'patients' ? fetchPatients() :
+                activeTab === 'enquries' ? fetchEnquiries() : fetchBilling();
 
     const PAGE_TITLE = activeTab === 'doctors' ? 'Doctor Management'
         : activeTab === 'patients' ? 'Patient Management'
-            : 'Billing Management';
+            : activeTab === 'enquries' ? 'Contact Us Enquiries'
+                : 'Billing Management';
     const PAGE_SUB = activeTab === 'doctors' ? 'Approve and manage doctor registrations'
         : activeTab === 'patients' ? 'View and manage patient records'
-            : 'Manage payments and billing';
+            : activeTab === 'enquries' ? 'Messages submitted through the Contact Us form'
+                : 'Manage payments and billing';
 
     /* ─── shared cell style ─── */
     const td = (extra = {}) => ({ padding: '12px 16px', fontSize: 14, color: '#374151', ...extra });
@@ -217,7 +252,17 @@ const AdminDashboard = () => {
                 .ab-red:hover:not(:disabled)   { background:#B91C1C; }
                 .ab-ghost { background:#fff; color:#374151; border:1px solid #D1D5DB; }
                 .ab-ghost:hover:not(:disabled) { background:#F3F4F6; }
+                .ab-blue { background:#2563EB; color:#fff; }
+                .ab-blue:hover:not(:disabled) { background:#1D4ED8; }
                 .adm-hamburger { display:none; }
+                .adm-clamp2 {
+                    display:-webkit-box;
+                    -webkit-line-clamp:2;
+                    -webkit-box-orient:vertical;
+                    overflow:hidden;
+                    line-height:1.4;
+                    max-height:2.8em;
+                }
                 @media (max-width:767px) {
                     .adm-sidebar { position:fixed; top:0; left:0; bottom:0; transform:translateX(-100%); }
                     .adm-sidebar.open { transform:translateX(0); box-shadow:4px 0 20px rgba(0,0,0,0.15); }
@@ -225,6 +270,8 @@ const AdminDashboard = () => {
                 }
                 @keyframes adm-spin { to { transform:rotate(360deg); } }
                 .adm-spinner { width:30px; height:30px; margin:0 auto 12px; border:3px solid #E5E7EB; border-top-color:#2563EB; border-radius:50%; animation:adm-spin 0.7s linear infinite; }
+                @keyframes adm-fadein { from { opacity:0; } to { opacity:1; } }
+                @keyframes adm-popin { from { opacity:0; transform:translateY(8px) scale(0.98); } to { opacity:1; transform:translateY(0) scale(1); } }
             `}</style>
 
             <div className="adm-root">
@@ -261,6 +308,11 @@ const AdminDashboard = () => {
                             >
                                 {icon}
                                 {label}
+                                {id === 'enquries' && enquiries.length > 0 && (
+                                    <span style={{ marginLeft: 'auto', background: '#DC2626', color: '#fff', fontSize: 10, fontWeight: 700, borderRadius: 20, padding: '1px 7px' }}>
+                                        {enquiries.length}
+                                    </span>
+                                )}
                             </button>
                         ))}
                     </nav>
@@ -395,6 +447,7 @@ const AdminDashboard = () => {
                                                                 <span style={{ padding: '3px 10px', borderRadius: 20, fontSize: 12, fontWeight: 700, display: 'inline-block', background: approved ? '#ECFDF5' : rejected ? '#FEF2F2' : '#FFFBEB', color: approved ? '#065F46' : rejected ? '#991B1B' : '#92400E' }}>
                                                                     {approved ? 'Approved' : rejected ? 'Rejected' : 'Pending'}
                                                                 </span>
+                                                                
                                                             </td>
                                                             <td style={td()}>
                                                                 <div style={{ display: 'flex', gap: 8 }}>
@@ -457,6 +510,61 @@ const AdminDashboard = () => {
                                     )}
                                 </div>
 
+                            ) : activeTab === 'enquries' ? (
+                                <div style={{ overflowX: 'auto' }}>
+                                    <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
+                                        <colgroup>
+                                            <col style={{ width: 70 }} />
+                                            <col style={{ width: 160 }} />
+                                            <col style={{ width: 200 }} />
+                                            <col style={{ width: 160 }} />
+                                            <col />
+                                            <col style={{ width: 90 }} />
+                                        </colgroup>
+                                        <thead><tr style={{ borderBottom: '1px solid #E5E7EB' }}>
+                                            {['ID', 'Name', 'Email', 'Subject', 'Message', ''].map(h => <th key={h} style={th}>{h}</th>)}
+                                        </tr></thead>
+                                        <tbody>
+                                            {enquiries.length === 0
+                                                ? <tr><td colSpan={6} style={{ padding: '56px 24px', textAlign: 'center', color: '#9CA3AF' }}>
+                                                    <p style={{ fontWeight: 600, color: '#374151', margin: '0 0 4px' }}>No enquiries found</p>
+                                                    <p style={{ fontSize: 13, margin: 0 }}>No Contact Us submissions available.</p>
+                                                </td></tr>
+                                                : enquiries.map(en => (
+                                                    <tr key={en.id} className="adm-tr">
+                                                        <td style={td({ color: '#6B7280', fontFamily: 'monospace', fontSize: 13 })}>{en.id}</td>
+                                                        <td style={td()}>
+                                                            <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
+                                                                <div style={{ width: 32, height: 32, borderRadius: 8, background: '#FFF7ED', color: '#C2410C', fontWeight: 700, fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, border: '1.5px solid #FED7AA' }}>
+                                                                    {(en.name?.[0] || '?').toUpperCase()}
+                                                                </div>
+                                                                <span style={{ fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{en.name}</span>
+                                                            </div>
+                                                        </td>
+                                                        <td style={td({ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' })}>{en.email}</td>
+                                                        <td style={td({ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' })}>{en.subject || '—'}</td>
+                                                        <td style={td()}>
+                                                            {/* Clamped to 2 lines so row height stays consistent regardless
+                                                                of message length; full text lives in the modal below. */}
+                                                            <p className="adm-clamp2" style={{ margin: 0 }}>{en.message || '—'}</p>
+                                                        </td>
+                                                        <td style={td()}>
+                                                            <button className="ab ab-blue" onClick={() => setViewEnquiry(en)}>View</button>
+                                                        </td>
+                                                    </tr>
+                                                ))
+                                            }
+                                        </tbody>
+                                    </table>
+                                    {enqTotalPages > 1 && (
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '15px 20px', borderTop: '1px solid #E5E7EB', background: '#F9FAFB' }}>
+                                            <button className="ab ab-ghost" disabled={enqPage === 0} onClick={() => setEnqPage(p => p - 1)}>Previous</button>
+                                            <span style={{ fontSize: '13px', color: '#6B7280', fontWeight: 600 }}>Page {enqPage + 1} of {enqTotalPages}</span>
+                                            <button className="ab ab-ghost" disabled={enqPage >= enqTotalPages - 1} onClick={() => setEnqPage(p => p + 1)}>Next</button>
+                                        </div>
+                                    )}
+                                </div>
+
                             ) : (
                                 <div style={{ overflowX: 'auto' }}>
                                     <table style={{ width: '100%', borderCollapse: 'collapse' }}>
@@ -504,6 +612,73 @@ const AdminDashboard = () => {
                     </main>
                 </div>
             </div>
+
+            {/* ══ ENQUIRY DETAILS MODAL ══ */}
+            {viewEnquiry && (
+                <div
+                    onClick={() => setViewEnquiry(null)}
+                    style={{
+                        position: 'fixed', inset: 0, zIndex: 100,
+                        background: 'rgba(17,24,39,0.5)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        padding: 20, animation: 'adm-fadein 0.15s ease',
+                    }}
+                >
+                    <div
+                        onClick={e => e.stopPropagation()}
+                        role="dialog"
+                        aria-modal="true"
+                        aria-label="Enquiry details"
+                        style={{
+                            background: '#fff', borderRadius: 12, width: '100%', maxWidth: 520,
+                            maxHeight: '80vh', overflow: 'hidden', display: 'flex', flexDirection: 'column',
+                            boxShadow: '0 20px 50px rgba(0,0,0,0.25)', animation: 'adm-popin 0.18s ease',
+                        }}
+                    >
+                        <div style={{ padding: '16px 20px', borderBottom: '1px solid #F3F4F6', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <div>
+                                <p style={{ margin: 0, fontSize: 15, fontWeight: 700, color: '#111827' }}>Enquiry Details</p>
+                                <p style={{ margin: '2px 0 0', fontSize: 12, color: '#9CA3AF', fontFamily: 'monospace' }}>ID: {viewEnquiry.id}</p>
+                            </div>
+                            <button
+                                onClick={() => setViewEnquiry(null)}
+                                aria-label="Close"
+                                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6B7280', fontSize: 22, lineHeight: 1, padding: 4 }}
+                            >×</button>
+                        </div>
+
+                        <div style={{ padding: '18px 20px', overflowY: 'auto' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+                                <div style={{ width: 42, height: 42, borderRadius: 10, background: '#FFF7ED', color: '#C2410C', fontWeight: 700, fontSize: 15, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, border: '1.5px solid #FED7AA' }}>
+                                    {(viewEnquiry.name?.[0] || '?').toUpperCase()}
+                                </div>
+                                <div style={{ minWidth: 0 }}>
+                                    <p style={{ margin: 0, fontWeight: 700, fontSize: 15, color: '#111827', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{viewEnquiry.name}</p>
+                                    <p style={{ margin: 0, fontSize: 13, color: '#6B7280', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{viewEnquiry.email}</p>
+                                </div>
+                            </div>
+
+                            <div style={{ marginBottom: 14 }}>
+                                <p style={{ margin: '0 0 4px', fontSize: 11, fontWeight: 700, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Subject</p>
+                                <p style={{ margin: 0, fontSize: 14, color: '#111827', fontWeight: 600 }}>{viewEnquiry.subject || '—'}</p>
+                            </div>
+
+                            <div>
+                                <p style={{ margin: '0 0 4px', fontSize: 11, fontWeight: 700, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Message</p>
+                                {/* Rendered as plain text (never dangerouslySetInnerHTML) so any
+                                    links or markup a user pastes can't execute or auto-linkify. */}
+                                <p style={{ margin: 0, fontSize: 14, color: '#374151', lineHeight: 1.6, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+                                    {viewEnquiry.message || '—'}
+                                </p>
+                            </div>
+                        </div>
+
+                        <div style={{ padding: '12px 20px', borderTop: '1px solid #F3F4F6', display: 'flex', justifyContent: 'flex-end' }}>
+                            <button className="ab ab-ghost" onClick={() => setViewEnquiry(null)} style={{ padding: '8px 16px' }}>Close</button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </>
     );
 };

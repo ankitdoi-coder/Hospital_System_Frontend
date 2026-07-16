@@ -7,6 +7,12 @@ export const getDoctors = async (page = 0, size = 10) => {
     });
     return response.data;
 };
+export const getEnquries = async (page = 0, size = 10) => {
+    const response = await apiClient.get('/api/admin/enquries', {
+        params: { page, size }
+    });
+    return response.data;
+};
 
 // Approve doctor (No pagination needed)
 export const approveDoctor = (id) => apiClient.put(`/api/admin/doctors/${id}/approve`);

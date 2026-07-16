@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate, Routes, Route, Link, useLocation } from "react-router-dom";
 import { LogOut, Menu, X, LayoutDashboard, Users, CalendarPlus, CalendarCheck, FileText, Settings, Bell, ChevronRight } from "lucide-react";
-import { removeToken, getUserEmail } from "../../Services/AuthService.js";
+import { removeToken, getUserEmail,logout } from "../../Services/AuthService.js";
 import { getMyAppointments, getMyPrescriptions, getMyProfile, getMyNotifications, getUnreadCount, markNotificationRead, markAllNotificationsRead } from "../../Services/PatientService.js";
 import logo from "../../assets/OnlyLogo.svg";
 import DoctorsList from "../Patient SubComponent/DoctorsList.jsx";
@@ -9,6 +9,7 @@ import NewAppointment from "../Patient SubComponent/NewAppointment.jsx";
 import AppointmentHistory from "../Patient SubComponent/AppointmentHistory.jsx";
 import ProfileSettings from "../ProfileSettings.jsx";
 import defaultpfp from "/deafaultpfp.jpg";
+
 
 
 /* ─────────────────────────────────────────────
@@ -165,7 +166,7 @@ const DashboardHome = () => {
                 const aptTotal = Array.isArray(apt) ? apt.length : (apt.totalElements ?? aptList.length);
                 setAppointments(aptList);
                 setTotalAppointments(aptTotal);
-                setProfile(prof.data); // getMyProfile() is a raw axios response — use .data, not prof itself
+                setProfile(prof); // getMyProfile() is a raw axios response — use .data, not prof itself
                 setError(null);
             } catch (err) {
                 if (cancelled) return;
@@ -321,8 +322,9 @@ const PrescriptionsPage = () => {
                     getMyProfile(),
                 ]);
                 if (cancelled) return;
-                setPrescriptions(rx.content || []);
-                setPatientProfile(prof);
+                // Handle both shapes: paginated Page ({content}) or plain array
+                setPrescriptions(Array.isArray(rx) ? rx : (rx.content || []));
+                setPatientProfile(prof); // getMyProfile() is a raw axios response — use .data
             } catch (err) {
                 if (cancelled) return;
                 setPrescriptions([]);
@@ -494,14 +496,33 @@ const PatientDashboard = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [profile, setProfile] = useState(null);
 
-    const handleLogout = useCallback(() => { removeToken(); navigate("/login"); }, [navigate]);
+    const handleLogout = useCallback(async () => {
+        try {
+            // 1. Get the token or auth header needed for your API
+            const token = localStorage.getItem('authToken');
+            const authHeader = { headers: { Authorization: `Bearer ${token}` } };
+
+            // 2. Await the API call to ensure it completes
+            await logout(authHeader);
+        } catch (error) {
+            console.error("Logout failed:", error);
+            // Optional: Proceed with local logout anyway if API fails
+        } finally {
+            // 3. Clear local session state (localStorage/Context)
+            localStorage.removeItem('authToken');
+
+            // 4. Redirect to login
+            navigate("/login");
+        }
+    }, [navigate]);
 
     useEffect(() => {
         let cancelled = false;
         const fetchProfile = async () => {
             try {
-                const prof = await getMyProfile();
-                if (!cancelled) setProfile(prof);
+                const res = await getMyProfile();
+                if (!cancelled) setProfile(res);
+                //console.log('PROFILE VARIABLE:', res); // .data, not the raw response
             } catch (err) {
                 if (err.response?.status === 401 || err.response?.status === 403) handleLogout();
             }

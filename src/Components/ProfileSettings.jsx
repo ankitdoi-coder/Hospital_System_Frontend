@@ -19,6 +19,16 @@ const ProfileSettings = ({ userType = 'patient', userProfile, onProfileUpdate })
     const [isUploading, setIsUploading] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
 
+    // useState's initializer only runs once, at first mount — and userProfile is
+    // still null then (it loads async in the parent). This effect re-syncs the
+    // form fields once the real profile data actually arrives, and again if it
+    // changes (e.g. after a save).
+    useEffect(() => {
+        if (userProfile) {
+            setProfileData(prev => ({ ...prev, ...userProfile }));
+        }
+    }, [userProfile]);
+
     useEffect(() => {
         const imageUrl = userProfile?.profilePicture || userProfile?.profilepicture || userProfile?.imageUrl;
         if (imageUrl) {
