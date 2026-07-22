@@ -285,6 +285,7 @@ The backend uses a normalized relational schema with JPA entity relationships.
 | 📅 Appointment | ![Appointment](./ScreenShots/Appointment.jpg) |
 | ℹ️ About Us | ![About](./ScreenShots/AboutUs.jpg) |
 | 🩺 Services | ![Services](./ScreenShots/Services.jpg) |
+| 🤖 AI Chat Bot | ![Services](./ScreenShots/ai.jpg) |
 | 📨 Admin — Enquiries | <img src="/enquire.svg" width="20" height="20" alt="Enquiries icon" /> |
 
 ---

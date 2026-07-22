@@ -1,15 +1,17 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate, Routes, Route, Link, useLocation } from "react-router-dom";
-import { LogOut, Menu, X, LayoutDashboard, Users, CalendarPlus, CalendarCheck, FileText, Settings, Bell, ChevronRight } from "lucide-react";
+import { LogOut, Menu, X, LayoutDashboard, Users, CalendarPlus, CalendarCheck, FileText, Settings, Bell,ChevronRight, MessageCircle } from "lucide-react";
 import { removeToken, getUserEmail,logout } from "../../Services/AuthService.js";
 import { getMyAppointments, getMyPrescriptions, getMyProfile, getMyNotifications, getUnreadCount, markNotificationRead, markAllNotificationsRead } from "../../Services/PatientService.js";
 import logo from "../../assets/OnlyLogo.svg";
 import DoctorsList from "../Patient SubComponent/DoctorsList.jsx";
 import NewAppointment from "../Patient SubComponent/NewAppointment.jsx";
 import AppointmentHistory from "../Patient SubComponent/AppointmentHistory.jsx";
+import ChatWidget from "../Patient SubComponent/ChatWidget.jsx";
 import ProfileSettings from "../ProfileSettings.jsx";
 import defaultpfp from "/deafaultpfp.jpg";
 
+// import { LogOut, Menu, X, LayoutDashboard, Users, CalendarPlus, CalendarCheck, FileText, Settings, Bell, ChevronRight, MessageCircle } from "lucide-react";
 
 
 /* ─────────────────────────────────────────────
@@ -133,6 +135,7 @@ const navItems = [
     { name: "My Appointments", path: "/patient/appointments", icon: CalendarCheck },
     { name: "Prescriptions", path: "/patient/medicine", icon: FileText },
     { name: "Profile Settings", path: "/patient/profile", icon: Settings },
+    //{ name: "AI Assistant", path: "/patient/assistant", icon: MessageCircle },
 ];
 
 /* ─────────────────────────────────────────────
@@ -666,6 +669,7 @@ const PatientDashboard = () => {
                         <Route path="new-appointment" element={<NewAppointment />} />
                         <Route path="appointments" element={<AppointmentHistory />} />
                         <Route path="medicine" element={<PrescriptionsPage />} />
+                        <Route path="assistant" element={<ChatWidget />} />
                         <Route path="profile" element={
                             <ProfileSettings
                                 userType="patient"
@@ -678,6 +682,7 @@ const PatientDashboard = () => {
                     </Routes>
                 </div>
             </main>
+            <ChatWidget />
 
             <style>{`
                 @media (max-width: 768px) {
