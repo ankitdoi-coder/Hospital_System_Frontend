@@ -24,11 +24,17 @@ const getProfilePictureFromLocal = (userType = 'patient') => {
     return localStorage.getItem(`profilePicture_${userType}`);
 };
 
+export const updateMyProfile = async (profileData) => {
+    const response = await api.put('/api/patient/profile', profileData);
+    return response.data;
+};
+
 const ProfileService = {
     uploadProfilePicture,
     deletePatientProfilePicture,
     saveProfilePictureToLocal,
     getProfilePictureFromLocal,
+    
 };
 
 export {
@@ -36,6 +42,7 @@ export {
     deletePatientProfilePicture,
     saveProfilePictureToLocal,
     getProfilePictureFromLocal,
+    
 };
 
 export default ProfileService;

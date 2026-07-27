@@ -25,7 +25,14 @@ const ProfileSettings = ({ userType = 'patient', userProfile, onProfileUpdate })
     // changes (e.g. after a save).
     useEffect(() => {
         if (userProfile) {
-            setProfileData(prev => ({ ...prev, ...userProfile }));
+            setProfileData(prev => ({
+                ...prev,
+                ...userProfile,
+                // YAHAN JUGAD HAI: Agar null aaye toh empty string '' assign kar do
+                address: userProfile.address || '',
+                contactNumber: userProfile.contactNumber || '',
+                dob: userProfile.dob || ''
+            }));
         }
     }, [userProfile]);
 

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate, Routes, Route, Link, useLocation } from "react-router-dom";
-import { LogOut, Menu, X, LayoutDashboard, Users, CalendarPlus, CalendarCheck, FileText, Settings, Bell,ChevronRight, MessageCircle } from "lucide-react";
-import { removeToken, getUserEmail,logout } from "../../Services/AuthService.js";
+import { LogOut, Menu, X, LayoutDashboard, Users, CalendarPlus, CalendarCheck, FileText, Settings, Bell, ChevronRight, MessageCircle } from "lucide-react";
+import { removeToken, getUserEmail, logout } from "../../Services/AuthService.js";
 import { getMyAppointments, getMyPrescriptions, getMyProfile, getMyNotifications, getUnreadCount, markNotificationRead, markAllNotificationsRead } from "../../Services/PatientService.js";
 import logo from "../../assets/OnlyLogo.svg";
 import DoctorsList from "../Patient SubComponent/DoctorsList.jsx";
@@ -10,6 +10,7 @@ import AppointmentHistory from "../Patient SubComponent/AppointmentHistory.jsx";
 import ChatWidget from "../Patient SubComponent/ChatWidget.jsx";
 import ProfileSettings from "../ProfileSettings.jsx";
 import defaultpfp from "/deafaultpfp.jpg";
+import { updateMyProfile } from "../../Services/ProfileService.js";
 
 // import { LogOut, Menu, X, LayoutDashboard, Users, CalendarPlus, CalendarCheck, FileText, Settings, Bell, ChevronRight, MessageCircle } from "lucide-react";
 
@@ -674,8 +675,12 @@ const PatientDashboard = () => {
                             <ProfileSettings
                                 userType="patient"
                                 userProfile={profile}
-                                onProfileUpdate={async (updated) => {
-                                    setProfile(prev => ({ ...prev, ...updated }));
+                                onProfileUpdate={async (updatedData) => {
+                                    // 1. Call the backend to save the data
+                                    await updateMyProfile(updatedData);
+
+                                    // 2. Update the local React state so the UI reflects the new data immediately
+                                    setProfile(prev => ({ ...prev, ...updatedData }));
                                 }}
                             />
                         } />
