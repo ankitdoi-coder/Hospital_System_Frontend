@@ -8,9 +8,9 @@ const ProfileSettings = ({ userType = 'patient', userProfile, onProfileUpdate })
         firstName: '',
         lastName: '',
         email: '',
-        phone: '',
+        contactNumber: '',
         address: '',
-        dateOfBirth: '',
+        dob: '',
         ...userProfile
     });
 
@@ -180,8 +180,8 @@ const ProfileSettings = ({ userType = 'patient', userProfile, onProfileUpdate })
                                     </label>
                                     <input
                                         type="tel"
-                                        name="phone"
-                                        value={profileData.phone}
+                                        name="contactNumber"
+                                        value={profileData.contactNumber}
                                         onChange={handleInputChange}
                                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                                         placeholder="Enter your phone number"
@@ -196,8 +196,8 @@ const ProfileSettings = ({ userType = 'patient', userProfile, onProfileUpdate })
                                     </label>
                                     <input
                                         type="date"
-                                        name="dateOfBirth"
-                                        value={profileData.dateOfBirth}
+                                        name="dob"
+                                        value={profileData.dob}
                                         onChange={handleInputChange}
                                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                                     />
