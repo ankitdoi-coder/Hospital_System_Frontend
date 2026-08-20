@@ -3,6 +3,9 @@ import apiClient from '../API/apiClient';
 // 1. Get doctor profile details
 export const getDoctorProfile = () => apiClient.get('/api/doctor/profile');
 
+// 2. Update doctor profile details
+export const updateDoctorProfile = (profileData) => apiClient.put('/api/doctor/profile', profileData);
+
 // 2. Get my appointments as a doctor (UPDATED WITH PAGINATION)
 export const getMyAppointments = async (page = 0, size = 10) => {
     const response = await apiClient.get('/api/doctor/appointments/my', {

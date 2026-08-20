@@ -5,7 +5,7 @@ import { removeToken, getUserEmail, setupAxiosInterceptors } from "../../Service
 import toast, { Toaster } from 'react-hot-toast';
 import {
     getMyAppointments, updateAppointmentStatus, createPrescription,
-    getMyPatients, getMyPrescriptions, getDoctorProfile,
+    getMyPatients, getMyPrescriptions, getDoctorProfile, updateDoctorProfile,
     getMyNotifications, getUnreadCount, markNotificationRead, markAllNotificationsRead
 } from "../../Services/DoctorService.js";
 import ProfileSettings from "../ProfileSettings.jsx";
@@ -901,7 +901,9 @@ const DoctorDashboard = () => {
                                 userType="doctor"
                                 userProfile={doctorProfile}
                                 onProfileUpdate={async (updatedProfile) => {
-                                    setDoctorProfile(prev => ({ ...prev, ...updatedProfile }));
+                                    const res = await updateDoctorProfile(updatedProfile);
+                                    const saved = res?.data ?? res;
+                                    setDoctorProfile(prev => ({ ...prev, ...saved }));
                                 }}
                             />
                         </div>
